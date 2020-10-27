@@ -1,6 +1,8 @@
 #include <cest/iostream.hpp>
 #include <cest/vector.hpp>
 
+#include <poacher/brainfuck.hpp>
+
 #include <type_traits>
 #include <utility>
 
