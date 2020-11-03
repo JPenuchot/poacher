@@ -1,4 +1,4 @@
-/poacher
+build/
 
 *.d
 *.o
