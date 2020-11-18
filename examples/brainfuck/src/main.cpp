@@ -6,10 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-template<typename F, typename V>
-constexpr auto
-eval_to_array(F f, V visitor)
-{
+template <typename F, typename V> constexpr auto eval_to_array(F f, V visitor) {
   constexpr auto sz = f().size();
   std::array<typename std::decay_t<decltype(f())>::value_type, sz> res;
   for (std::size_t i = 0; i < sz; i++)
@@ -17,18 +14,16 @@ eval_to_array(F f, V visitor)
   return res;
 }
 
-int
-main()
-{
+int main() {
   auto constexpr arr = eval_to_array(
-    []() constexpr {
-      cest::vector<int> v;
-      v.push_back(20);
-      v.push_back(32);
-      v.push_back(52);
-      return v;
-    },
-    []<typename E>(E&& e) { return std::forward<E>(e); });
+      []() constexpr {
+        cest::vector<int> v;
+        v.push_back(20);
+        v.push_back(32);
+        v.push_back(52);
+        return v;
+      },
+      []<typename E>(E &&e) { return std::forward<E>(e); });
 
   static_assert(arr[2] == 52);
 

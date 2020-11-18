@@ -8,5 +8,5 @@ target_include_directories(brainfuck PUBLIC "include/")
 add_custom_target(constexpr-brainfuck COMMAND "constexpr-everything"
   "-p" "${CMAKE_BINARY_DIR}" ${SOURCES})
 
-add_custom_target(format-brainfuck COMMAND "clang-format" "-i" "--style=Mozilla"
+add_custom_target(format-brainfuck COMMAND "clang-format" "-i"
   ${SOURCES} ${HEADERS})
