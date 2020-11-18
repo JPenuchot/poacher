@@ -61,6 +61,7 @@ protected:
 
 public:
   constexpr ast_node_kind_t get_kind() const { return kind_; }
+  constexpr virtual ~ast_node_t() = default;
 };
 
 class token_node_t : public ast_node_t {
@@ -109,34 +110,18 @@ using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
 
 // isa implementation
 
-template <typename T> bool isa(ast_node_t *n);
+template <typename T> constexpr bool isa(ast_node_t &n);
 
-template <> bool isa<token_node_t>(ast_node_t *n) {
-  return n->get_kind() == token_node_v;
+template <> constexpr bool isa<token_node_t>(ast_node_t &n) {
+  return n.get_kind() == token_node_v;
 }
 
-template <> bool isa<block_node_t>(ast_node_t *n) {
-  return n->get_kind() == block_node_v;
+template <> constexpr bool isa<block_node_t>(ast_node_t &n) {
+  return n.get_kind() == block_node_v;
 }
 
-template <> bool isa<while_node_t>(ast_node_t *n) {
-  return n->get_kind() == while_node_v;
-}
-
-// getas implementation
-
-template <typename T> T *getas(ast_node_t *n);
-
-template <> token_node_t *getas<token_node_t>(ast_node_t *n) {
-  return isa<token_node_t>(n) ? reinterpret_cast<token_node_t *>(n) : nullptr;
-}
-
-template <> block_node_t *getas<block_node_t>(ast_node_t *n) {
-  return isa<block_node_t>(n) ? reinterpret_cast<block_node_t *>(n) : nullptr;
-}
-
-template <> while_node_t *getas<while_node_t>(ast_node_t *n) {
-  return isa<while_node_t>(n) ? reinterpret_cast<while_node_t *>(n) : nullptr;
+template <> constexpr bool isa<while_node_t>(ast_node_t &n) {
+  return n.get_kind() == while_node_v;
 }
 
 } // namespace brainfuck
