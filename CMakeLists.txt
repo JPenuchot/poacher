@@ -21,4 +21,5 @@ add_subdirectory(examples)
 # DOCUMENTATION
 
 find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+set(DOXYGEN_EXTRACT_ALL "YES")
 doxygen_add_docs(docs ALL)
