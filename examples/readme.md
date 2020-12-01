@@ -1,3 +1,3 @@
 # Examples
 
-- [brainfuck](./brainfuck/readme.md)
+- [brainfuck](./brainfuck/)
