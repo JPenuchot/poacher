@@ -1,30 +1,9 @@
 #pragma once
 
-#include <tuple>
-
 #include <brainfuck/ast.hpp>
+#include <brainfuck/ir.hpp>
 
 namespace brainfuck {
-
-// TODO: Intermediate representation ?
-// - token_node_ir_t
-// - block_node_ir_t
-// - while_node_ir_t
-
-template <typename... Ts> struct block_node_ir_t {
-  constexpr block_node_ir_t(Ts const &...) {}
-};
-template <typename... Ts> struct while_node_ir_t {
-  constexpr while_node_ir_t(Ts const &...) {}
-};
-
-template <ast_node_kind_t V>
-using token_node_ir_t = std::integral_constant<ast_node_kind_t, V>;
-
-template <ast_node_kind_t> struct kind_to_type {};
-template <> struct kind_to_type<token_node_v> { using type = token_node_t; };
-template <> struct kind_to_type<block_node_v> { using type = block_node_t; };
-template <> struct kind_to_type<while_node_v> { using type = while_node_t; };
 
 // f being a cosntexpr function with return type ast_node_t
 template <typename f> constexpr auto to_ir(f) {
