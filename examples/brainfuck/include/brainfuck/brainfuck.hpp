@@ -8,6 +8,6 @@
 
 // Transformation steps
 
-#include <brainfuck/parser.hpp>
 #include <brainfuck/ast_to_ir.hpp>
 #include <brainfuck/ir_to_program.hpp>
+#include <brainfuck/parser.hpp>

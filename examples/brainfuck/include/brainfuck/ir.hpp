@@ -2,14 +2,16 @@
 
 namespace brainfuck {
 
-template <typename... Ts> struct block_node_ir_t {
-  constexpr block_node_ir_t(Ts const &...) {}
-};
-template <typename... Ts> struct while_node_ir_t {
-  constexpr while_node_ir_t(Ts const &...) {}
+template <typename... Ts> struct ir_block_t {
+  constexpr ir_block_t(Ts const &...) {}
 };
 
-template <ast_node_kind_t V>
-using token_node_ir_t = std::integral_constant<ast_node_kind_t, V>;
+template <typename... Ts> struct ir_while_t {
+  constexpr ir_while_t(Ts const &...) {}
+};
+
+template <token_t V>
+struct ir_token_t
+{};
 
 } // namespace brainfuck

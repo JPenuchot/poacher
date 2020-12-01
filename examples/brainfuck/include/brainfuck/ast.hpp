@@ -64,18 +64,18 @@ public:
   constexpr virtual ~ast_node_t() = default;
 };
 
-class token_node_t : public ast_node_t {
+class ast_token_t : public ast_node_t {
   token_t token_;
 
 public:
-  constexpr token_node_t(token_t t) : ast_node_t(token_node_v), token_(t) {}
+  constexpr ast_token_t(token_t t) : ast_node_t(token_node_v), token_(t) {}
 
   constexpr token_t get_token() const { return token_; }
 
-  constexpr ~token_node_t() = default;
+  constexpr ~ast_token_t() = default;
 };
 
-class block_node_t : public ast_node_t {
+class ast_block_t : public ast_node_t {
 public:
   using node_ptr_t = cest::unique_ptr<ast_node_t>;
 
@@ -83,15 +83,15 @@ private:
   cest::vector<node_ptr_t> content_;
 
 public:
-  constexpr block_node_t() : ast_node_t(block_node_v) {}
+  constexpr ast_block_t() : ast_node_t(block_node_v) {}
 
-  constexpr block_node_t(block_node_t &&v) = default;
-  constexpr block_node_t &operator=(block_node_t &&v) = default;
+  constexpr ast_block_t(ast_block_t &&v) = default;
+  constexpr ast_block_t &operator=(ast_block_t &&v) = default;
 
-  constexpr block_node_t(block_node_t const &v) = delete;
-  constexpr block_node_t &operator=(block_node_t const &v) = delete;
+  constexpr ast_block_t(ast_block_t const &v) = delete;
+  constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
-  constexpr block_node_t(cest::vector<node_ptr_t> &&v) : block_node_t() {
+  constexpr ast_block_t(cest::vector<node_ptr_t> &&v) : ast_block_t() {
     content_ = std::move(v);
   }
 
@@ -100,20 +100,20 @@ public:
     return content_;
   }
 
-  constexpr ~block_node_t() = default;
+  constexpr ~ast_block_t() = default;
 };
 
-class while_node_t : public ast_node_t {
-  block_node_t block_;
+class ast_while_t : public ast_node_t {
+  ast_block_t block_;
 
 public:
-  constexpr while_node_t(cest::vector<cest::unique_ptr<ast_node_t>> &&v)
+  constexpr ast_while_t(cest::vector<cest::unique_ptr<ast_node_t>> &&v)
       : ast_node_t(while_node_v), block_(std::move(v)) {}
 
-  constexpr block_node_t &get_block() { return block_; }
-  constexpr block_node_t const &get_block() const { return block_; }
+  constexpr ast_block_t &get_block() { return block_; }
+  constexpr ast_block_t const &get_block() const { return block_; }
 
-  constexpr ~while_node_t() = default;
+  constexpr ~ast_while_t() = default;
 };
 
 // Helpers
@@ -126,15 +126,15 @@ using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
 
 template <typename T> constexpr bool isa(ast_node_t &n);
 
-template <> constexpr bool isa<token_node_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_token_t>(ast_node_t &n) {
   return n.get_kind() == token_node_v;
 }
 
-template <> constexpr bool isa<block_node_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_block_t>(ast_node_t &n) {
   return n.get_kind() == block_node_v;
 }
 
-template <> constexpr bool isa<while_node_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_while_t>(ast_node_t &n) {
   return n.get_kind() == while_node_v;
 }
 
