@@ -51,8 +51,8 @@ constexpr ast_node_vec_t parse_ast(token_vec_t::const_iterator begin,
       // parse while content
       ast_vec.push_back(new while_node_t(parse_ast(begin, w_end)));
 
-      begin = w_end;  // commit
-      continue;       // exit while
+      begin = w_end; // commit
+      continue;      // exit while
     }
 
     ast_vec.push_back(ast_node_ptr_t(new token_node_t(*begin)));

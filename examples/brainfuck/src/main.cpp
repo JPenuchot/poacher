@@ -2,15 +2,15 @@
 #include <tuple>
 #include <utility>
 
-//constexpr auto const hello_world =
-//    "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
-//    "-.<.+++.------.--------.>>+.>++.";
+constexpr auto const hello_world =
+    "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
+    "-.<.+++.------.--------.>>+.>++.";
 
 constexpr auto const add_val = "[->+<]";
 
 constexpr bool foo() {
   namespace bf = brainfuck;
-  bf::ast_node_ptr_t ast(new bf::block_node_t(bf::parse_ast(add_val)));
+  bf::ast_node_ptr_t ast(new bf::block_node_t(bf::parse_ast(hello_world)));
   return true;
 }
 
@@ -18,9 +18,10 @@ void czech(int) {}
 
 int main() {
   namespace bf = brainfuck;
-  constexpr auto ast_ir = bf::to_ir([]() constexpr {
-    return bf::ast_node_ptr_t(new bf::block_node_t(bf::parse_ast(add_val)));
+  constexpr auto ast_ir = bf::to_ir([]() constexpr->bf::ast_node_ptr_t {
+    return {new bf::block_node_t(bf::parse_ast(hello_world))};
   });
+
   static_assert(foo());
   foo();
 
