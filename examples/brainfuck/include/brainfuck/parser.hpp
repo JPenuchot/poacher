@@ -21,21 +21,18 @@ constexpr token_vec_t lex_tokens(cest::string const &input) {
   return vec;
 }
 
-constexpr auto parse_ast(token_vec_t::iterator begin, token_vec_t::iterator end)
-    -> block_node_t {
-  using input_it_t = token_vec_t::iterator;
+constexpr ast_node_vec_t parse_ast(token_vec_t::const_iterator begin,
+                                   token_vec_t::const_iterator end) {
+  using input_it_t = token_vec_t::const_iterator;
 
-  block_node_t block;
-  ast_node_vec_t &ast_vec = block.get_content();
+  ast_node_vec_t ast_vec;
 
-  while (begin != end) {
+  for (; begin != end; begin++) {
     // parse tokens until while block beginning
-    for (; begin != end; begin++)
-      if (*begin != nop_v)
-        ast_vec.push_back(ast_node_ptr_t(new token_node_t(*begin)));
+    if (*begin == nop_v)
+      continue;
 
-    if (begin != end) {
-
+    if (*begin == whb_v) {
       begin++; // enter while block
 
       // find block end
@@ -48,25 +45,25 @@ constexpr auto parse_ast(token_vec_t::iterator begin, token_vec_t::iterator end)
       // Check for unmatched while begin
       if (w_end == end) {
         cest::cout << "Unmatched while begin\n";
-        return block;
+        return std::move(ast_vec);
       }
 
       // parse while content
-      ast_vec.push_back(
-          ast_node_ptr_t(new block_node_t(parse_ast(begin, w_end))));
+      ast_vec.push_back(new while_node_t(parse_ast(begin, w_end)));
 
-      begin = w_end; // commit
-
-      begin++; // exit block
+      begin = w_end;  // commit
+      continue;       // exit while
     }
+
+    ast_vec.push_back(ast_node_ptr_t(new token_node_t(*begin)));
   }
 
-  return block;
+  return std::move(ast_vec);
 }
 
-constexpr auto parse_ast(cest::string const &input) {
-  auto tok = lex_tokens(input);
-  return parse_ast(tok.begin(), tok.end());
+constexpr ast_node_vec_t parse_ast(cest::string const &input) {
+  auto const tok = lex_tokens(input);
+  return parse_ast(tok.cbegin(), tok.cend());
 }
 
 } // namespace brainfuck

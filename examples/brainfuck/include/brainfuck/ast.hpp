@@ -69,6 +69,10 @@ class token_node_t : public ast_node_t {
 
 public:
   constexpr token_node_t(token_t t) : ast_node_t(token_node_v), token_(t) {}
+
+  constexpr token_t get_token() const { return token_; }
+
+  constexpr ~token_node_t() = default;
 };
 
 class block_node_t : public ast_node_t {
@@ -81,6 +85,12 @@ private:
 public:
   constexpr block_node_t() : ast_node_t(block_node_v) {}
 
+  constexpr block_node_t(block_node_t &&v) = default;
+  constexpr block_node_t &operator=(block_node_t &&v) = default;
+
+  constexpr block_node_t(block_node_t const &v) = delete;
+  constexpr block_node_t &operator=(block_node_t const &v) = delete;
+
   constexpr block_node_t(cest::vector<node_ptr_t> &&v) : block_node_t() {
     content_ = std::move(v);
   }
@@ -89,6 +99,8 @@ public:
   constexpr cest::vector<node_ptr_t> const &get_content() const {
     return content_;
   }
+
+  constexpr ~block_node_t() = default;
 };
 
 class while_node_t : public ast_node_t {
@@ -100,6 +112,8 @@ public:
 
   constexpr block_node_t &get_block() { return block_; }
   constexpr block_node_t const &get_block() const { return block_; }
+
+  constexpr ~while_node_t() = default;
 };
 
 // Helpers
@@ -122,6 +136,11 @@ template <> constexpr bool isa<block_node_t>(ast_node_t &n) {
 
 template <> constexpr bool isa<while_node_t>(ast_node_t &n) {
   return n.get_kind() == while_node_v;
+}
+
+template <typename T, typename U>
+constexpr T *getas(cest::unique_ptr<U> const &p) {
+  return static_cast<T *>(p.get());
 }
 
 } // namespace brainfuck
