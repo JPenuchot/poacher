@@ -5,7 +5,7 @@ project(poacher)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_compile_options("-fconstexpr-steps=2147483647")
+add_compile_options("-fconstexpr-steps=2147483647" "-O3")
 
 include_directories("include")
 
