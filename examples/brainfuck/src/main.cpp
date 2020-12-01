@@ -3,8 +3,7 @@
 #include <utility>
 
 constexpr auto const hello_world =
-    "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
-    "-.<.+++.------.--------.>>+.>++.";
+    "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
 
 constexpr auto const add_val = "[->+<]";
 
@@ -25,5 +24,8 @@ int main() {
   static_assert(foo());
   foo();
 
-  czech(ast_ir);
+  bf::program_state_t state;
+  state.i = 0;
+  state.data = {0};
+  run(ast_ir, state);
 }
