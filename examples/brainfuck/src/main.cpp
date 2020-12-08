@@ -6,16 +6,6 @@ constexpr auto const hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
-constexpr auto const add_val = "[->+<]";
-
-constexpr bool foo() {
-  namespace bf = brainfuck;
-  bf::ast_node_ptr_t ast(new bf::ast_block_t(bf::parse_ast(hello_world)));
-  return true;
-}
-
-void czech(int) {}
-
 int main() {
   namespace bf = brainfuck;
 
