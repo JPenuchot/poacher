@@ -64,6 +64,12 @@ public:
   constexpr virtual ~ast_node_t() = default;
 };
 
+// Helpers
+using token_vec_t = cest::vector<token_t>;
+using ast_node_ptr_t = cest::unique_ptr<ast_node_t>;
+using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
+// !Helpers
+
 class ast_token_t : public ast_node_t {
   token_t token_;
 
@@ -77,10 +83,10 @@ public:
 
 class ast_block_t : public ast_node_t {
 public:
-  using node_ptr_t = cest::unique_ptr<ast_node_t>;
+  using node_ptr_t = ast_node_ptr_t;
 
 private:
-  cest::vector<node_ptr_t> content_;
+  ast_node_vec_t content_;
 
 public:
   constexpr ast_block_t() : ast_node_t(block_node_v) {}
@@ -91,14 +97,12 @@ public:
   constexpr ast_block_t(ast_block_t const &v) = delete;
   constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
-  constexpr ast_block_t(cest::vector<node_ptr_t> &&v) : ast_block_t() {
+  constexpr ast_block_t(ast_node_vec_t &&v) : ast_block_t() {
     content_ = std::move(v);
   }
 
-  constexpr cest::vector<node_ptr_t> &get_content() { return content_; }
-  constexpr cest::vector<node_ptr_t> const &get_content() const {
-    return content_;
-  }
+  constexpr ast_node_vec_t &get_content() { return content_; }
+  constexpr ast_node_vec_t const &get_content() const { return content_; }
 
   constexpr ~ast_block_t() = default;
 };
@@ -107,7 +111,7 @@ class ast_while_t : public ast_node_t {
   ast_block_t block_;
 
 public:
-  constexpr ast_while_t(cest::vector<cest::unique_ptr<ast_node_t>> &&v)
+  constexpr ast_while_t(ast_node_vec_t &&v)
       : ast_node_t(while_node_v), block_(std::move(v)) {}
 
   constexpr ast_block_t &get_block() { return block_; }
@@ -115,12 +119,6 @@ public:
 
   constexpr ~ast_while_t() = default;
 };
-
-// Helpers
-
-using token_vec_t = cest::vector<token_t>;
-using ast_node_ptr_t = cest::unique_ptr<ast_node_t>;
-using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
 
 // isa implementation
 
