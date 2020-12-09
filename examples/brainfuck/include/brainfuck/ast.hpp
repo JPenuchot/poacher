@@ -89,17 +89,14 @@ private:
   ast_node_vec_t content_;
 
 public:
-  constexpr ast_block_t() : ast_node_t(block_node_v) {}
+  constexpr ast_block_t(ast_node_vec_t &&content)
+      : ast_node_t(block_node_v), content_(std::move(content)) {}
 
   constexpr ast_block_t(ast_block_t &&v) = default;
-  constexpr ast_block_t &operator=(ast_block_t &&v) = default;
-
   constexpr ast_block_t(ast_block_t const &v) = delete;
-  constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
-  constexpr ast_block_t(ast_node_vec_t &&v) : ast_block_t() {
-    content_ = std::move(v);
-  }
+  constexpr ast_block_t &operator=(ast_block_t &&v) = default;
+  constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
   constexpr ast_node_vec_t &get_content() { return content_; }
   constexpr ast_node_vec_t const &get_content() const { return content_; }
@@ -111,8 +108,8 @@ class ast_while_t : public ast_node_t {
   ast_block_t block_;
 
 public:
-  constexpr ast_while_t(ast_node_vec_t &&v)
-      : ast_node_t(while_node_v), block_(std::move(v)) {}
+  constexpr ast_while_t(ast_block_t &&block)
+      : ast_node_t(while_node_v), block_(std::move(block)) {}
 
   constexpr ast_block_t &get_block() { return block_; }
   constexpr ast_block_t const &get_block() const { return block_; }

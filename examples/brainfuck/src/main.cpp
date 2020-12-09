@@ -13,8 +13,5 @@ int main() {
   state.i = 0;
   state.data = {0};
 
-  run(bf::to_ir([]() constexpr->bf::ast_node_ptr_t {
-        return {cest::make_unique<bf::ast_block_t>(bf::parse_ast(hello_world))};
-      }),
-      state);
+  run(bf::to_ir([]() constexpr { return bf::parse_ast(hello_world); }), state);
 }
