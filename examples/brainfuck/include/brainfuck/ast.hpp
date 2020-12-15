@@ -47,9 +47,9 @@ constexpr enum token_t to_token(char c) {
 // AST
 
 enum ast_node_kind_t : std::uint8_t {
-  token_node_v,
-  block_node_v,
-  while_node_v,
+  ast_token_v,
+  ast_block_v,
+  ast_while_v,
 };
 
 class ast_node_t {
@@ -74,7 +74,7 @@ class ast_token_t : public ast_node_t {
   token_t token_;
 
 public:
-  constexpr ast_token_t(token_t t) : ast_node_t(token_node_v), token_(t) {}
+  constexpr ast_token_t(token_t t) : ast_node_t(ast_token_v), token_(t) {}
 
   constexpr token_t get_token() const { return token_; }
 
@@ -90,7 +90,7 @@ private:
 
 public:
   constexpr ast_block_t(ast_node_vec_t &&content)
-      : ast_node_t(block_node_v), content_(std::move(content)) {}
+      : ast_node_t(ast_block_v), content_(std::move(content)) {}
 
   constexpr ast_block_t(ast_block_t &&v) = default;
   constexpr ast_block_t(ast_block_t const &v) = delete;
@@ -109,7 +109,7 @@ class ast_while_t : public ast_node_t {
 
 public:
   constexpr ast_while_t(ast_block_t &&block)
-      : ast_node_t(while_node_v), block_(std::move(block)) {}
+      : ast_node_t(ast_while_v), block_(std::move(block)) {}
 
   constexpr ast_block_t &get_block() { return block_; }
   constexpr ast_block_t const &get_block() const { return block_; }
@@ -122,15 +122,15 @@ public:
 template <typename T> constexpr bool isa(ast_node_t &n);
 
 template <> constexpr bool isa<ast_token_t>(ast_node_t &n) {
-  return n.get_kind() == token_node_v;
+  return n.get_kind() == ast_token_v;
 }
 
 template <> constexpr bool isa<ast_block_t>(ast_node_t &n) {
-  return n.get_kind() == block_node_v;
+  return n.get_kind() == ast_block_v;
 }
 
 template <> constexpr bool isa<ast_while_t>(ast_node_t &n) {
-  return n.get_kind() == while_node_v;
+  return n.get_kind() == ast_while_v;
 }
 
 template <typename T, typename U>
