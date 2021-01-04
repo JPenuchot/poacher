@@ -44,3 +44,5 @@ Head over to our [Discord](https://discord.gg/mtn8dmB5qP) and don't hesitate
 to mention me (@JPenuchot) if you have any question regarding the project.
 
 ## Licensing
+
+>TODO
