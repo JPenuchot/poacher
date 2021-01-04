@@ -12,7 +12,12 @@ option(POACHER_METACLASS
   0)
 
 if(POACHER_METACLASS)
+  message("")
+  message("[POACHER] Metaclass enabled")
+  message("")
+
   add_compile_options("-freflection")
+  add_compile_options("-DPOACHER_METACLASS=1")
 endif()
 
 include_directories("include")
