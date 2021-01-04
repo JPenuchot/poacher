@@ -38,4 +38,9 @@ https://github.com/lefticus/constexpr_all_the_things)
 - [Jean Privat's courses on compiling & LR(1) parsing](
 https://info.uqam.ca/~privat/INF5000/)
 
+## Discuss
+
+Head over to our [Discord](https://discord.gg/mtn8dmB5qP) and don't hesitate
+to mention me (@JPenuchot) if you have any question regarding the project.
+
 ## Licensing
