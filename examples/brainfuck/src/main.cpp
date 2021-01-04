@@ -4,6 +4,8 @@ constexpr auto const hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
+void check(int){}
+
 int main() {
   namespace bf = brainfuck;
 
@@ -12,4 +14,13 @@ int main() {
   state.data = {0};
 
   run(bf::to_ir([]() constexpr { return bf::parse_ast(hello_world); }), state);
+
+  /*
+  consteval {
+    auto v = bf::parse_ast(hello_world);
+    -> fragment {
+      bf::backends::nttp::run_node<%{v.get()}>(state);
+    };
+  }
+  */
 }
