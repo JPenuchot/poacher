@@ -3,6 +3,8 @@
 #include <brainfuck/ast.hpp>
 #include <brainfuck/program.hpp>
 
+// NB: Does not work yet! Waiting for propconst: https://wg21.link/P1974
+
 namespace brainfuck::backends::nttp {
 
 template <const ast_node_t *n> void run_node(program_state_t &);
