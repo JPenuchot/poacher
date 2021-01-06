@@ -13,18 +13,9 @@ int main() {
   state.i = 0;
   state.data = {0};
 
-  // run(bf::to_ir([]() constexpr { return bf::parse_ast(hello_world); }),
-  // state);
+  run(bf::to_ir([]() constexpr { return bf::parse_ast(hello_world); }),
+    state);
 
-  consteval -> brainfuck::meta::gen_fragment<reflexpr(state)>(
-      bf::parse_ast(hello_world));
-
-  /*
-  consteval {
-    auto v = bf::parse_ast(hello_world);
-    -> fragment {
-      bf::backends::nttp::run_node<%{v.get()}>(state);
-    };
-  }
-  */
+  //consteval -> brainfuck::meta::gen_fragment<reflexpr(state)>(
+  //    bf::parse_ast(hello_world));
 }
