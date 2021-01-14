@@ -139,10 +139,11 @@ template <typename T, typename U> constexpr bool isa(U const *p) {
 
 template <typename T, typename U>
 constexpr bool isa(cest::unique_ptr<U> const &p) {
-  return isa<U>(*p);
+  return isa<T>(*p);
 }
 
-template <typename T, typename U> constexpr T *getas(cest::unique_ptr<U> const&p) {
+template <typename T, typename U>
+constexpr T *getas(cest::unique_ptr<U> const &p) {
   return static_cast<T *>(p.get());
 }
 
