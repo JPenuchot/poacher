@@ -119,22 +119,30 @@ public:
 
 // isa implementation
 
-template <typename T> constexpr bool isa(ast_node_t &n);
+template <typename T> constexpr bool isa(ast_node_t const &n);
 
-template <> constexpr bool isa<ast_token_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_token_t>(ast_node_t const &n) {
   return n.get_kind() == ast_token_v;
 }
 
-template <> constexpr bool isa<ast_block_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_block_t>(ast_node_t const &n) {
   return n.get_kind() == ast_block_v;
 }
 
-template <> constexpr bool isa<ast_while_t>(ast_node_t &n) {
+template <> constexpr bool isa<ast_while_t>(ast_node_t const &n) {
   return n.get_kind() == ast_while_v;
 }
 
+template <typename T, typename U> constexpr bool isa(U const *p) {
+  return isa<U>(*p);
+}
+
 template <typename T, typename U>
-constexpr T *getas(cest::unique_ptr<U> const &p) {
+constexpr bool isa(cest::unique_ptr<U> const &p) {
+  return isa<U>(*p);
+}
+
+template <typename T, typename U> constexpr T *getas(cest::unique_ptr<U> const&p) {
   return static_cast<T *>(p.get());
 }
 
