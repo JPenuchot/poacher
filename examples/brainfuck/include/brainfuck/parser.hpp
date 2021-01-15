@@ -10,6 +10,7 @@
 
 namespace brainfuck {
 
+namespace detail {
 //------------------------------------------------------------------------------
 // PARSING
 
@@ -62,9 +63,12 @@ constexpr ast_block_t parse_block(token_vec_t::const_iterator begin,
   return ast_block_t(std::move(ast_vec));
 }
 
+} // namespace detail
+
 constexpr ast_node_ptr_t parse_ast(cest::string const &input) {
-  auto const tok = lex_tokens(input);
-  return cest::make_unique<ast_block_t>(parse_block(tok.cbegin(), tok.cend()));
+  auto const tok = detail::lex_tokens(input);
+  return cest::make_unique<ast_block_t>(
+      detail::parse_block(tok.cbegin(), tok.cend()));
 }
 
 } // namespace brainfuck
