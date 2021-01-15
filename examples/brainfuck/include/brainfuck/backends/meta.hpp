@@ -1,5 +1,12 @@
 #pragma once
 
+// "meta" backend, based on fragments as implemented in Lock3's Clang fork:
+// https://github.com/lock3/meta/
+
+// The intent is to explore and test the code generation proposed by
+// the Lock3 team. There is no standard proposal yet for this model
+// and the end goal is to
+
 #if POACHER_METACLASS == 1
 
 #include <experimental/compiler>

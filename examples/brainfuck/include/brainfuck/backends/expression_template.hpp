@@ -1,5 +1,11 @@
 #pragma once
 
+// "expression_template" backend: C++20-compatible backend that turns the
+// AST into an expression template using constexpr lambda construction to
+// get around AST not being constexpr due to constexpr memory allocation.
+
+// Issue: *terrible* performance as programs get a bit too big.
+
 #include <brainfuck/ast.hpp>
 #include <brainfuck/program.hpp>
 
