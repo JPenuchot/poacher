@@ -24,15 +24,23 @@ include_directories("include")
 
 # FORMATTING
 
-file(GLOB_RECURSE HEADERS "include/*.hpp")
-add_custom_target(format COMMAND "clang-format" "-i" "--style=Mozilla"
-  ${HEADERS})
-# EXAMPLES
+set(POACHER_TARGET_LIST)
 
-add_subdirectory(examples)
+file(GLOB_RECURSE HEADERS "include/*.hpp")
+add_custom_target(format)
+#add_custom_target(format COMMAND "clang-format" "-i" "--style=Mozilla"
+#  ${HEADERS})
+
+function(poacher_format_register target_name)
+  add_dependencies(format ${target_name})
+endfunction()
 
 # DOCUMENTATION
 
 find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
 set(DOXYGEN_EXTRACT_ALL "YES")
 doxygen_add_docs(docs ALL)
+
+# EXAMPLES
+
+add_subdirectory(examples)
