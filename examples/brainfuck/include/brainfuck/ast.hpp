@@ -126,6 +126,7 @@ public:
 
   /// Returns a const reference to its content.
   constexpr ast_node_vec_t const &get_content() const { return content_; }
+  constexpr ast_node_vec_t &get_content() { return content_; }
 
   constexpr ~ast_block_t() = default;
 };
@@ -140,6 +141,7 @@ public:
 
   /// Returns a const reference to its block.
   constexpr ast_block_t const &get_block() const { return block_; }
+  constexpr ast_block_t &get_block() { return block_; }
 
   constexpr ~ast_while_t() = default;
 };
