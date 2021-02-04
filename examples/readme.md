@@ -1,3 +1,0 @@
-# Examples
-
-- [brainfuck](./brainfuck/)
