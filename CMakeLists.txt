@@ -40,4 +40,5 @@ doxygen_add_docs(docs ALL)
 
 # EXAMPLES
 
-add_subdirectory(examples)
+add_subdirectory(brainfuck)
+add_subdirectory(asciimath)
