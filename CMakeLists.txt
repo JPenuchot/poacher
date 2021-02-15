@@ -21,8 +21,6 @@ include_directories("include")
 
 # FORMATTING
 
-set(POACHER_TARGET_LIST)
-
 file(GLOB_RECURSE HEADERS "include/*.hpp")
 add_custom_target(format)
 #add_custom_target(format COMMAND "clang-format" "-i" "--style=Mozilla"
