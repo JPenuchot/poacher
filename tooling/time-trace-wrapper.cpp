@@ -8,17 +8,12 @@
 
 /// Wrapper for a given clang command.
 
-int get_timetrace_file(std::filesystem::path const out, std::string const &cmd,
+int get_timetrace_file(std::filesystem::path const out, std::string cmd,
                        std::filesystem::path obj_path) {
   namespace fs = std::filesystem;
 
-  { // Run command
-    std::ostringstream new_cmd;
-
-    new_cmd << cmd << " -ftime-trace";
-    std::cout << new_cmd.str() << '\n';
-    std::system(new_cmd.str().c_str());
-  } // namespace std::filesystem;
+  cmd += " -ftime-trace";
+  std::system(cmd.c_str());
 
   fs::copy_file(obj_path.replace_extension(".json"), out,
                 fs::copy_options::overwrite_existing);
@@ -53,6 +48,6 @@ int main(int argc, char const *argv[]) {
     cmd_builder << ' ' << *beg;
   }
 
-  return get_timetrace_file(argv[path_id], cmd_builder.str(),
+  return get_timetrace_file(argv[path_id], std::move(cmd_builder.str()),
                             std::move(obj_path));
 }
