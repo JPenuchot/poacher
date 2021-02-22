@@ -55,7 +55,7 @@ int main(int argc, char const *argv[]) {
   }
 
   if (!has_time_trace_flag)
-    cmd_builder << " -ftime_trace";
+    cmd_builder << " -ftime-trace";
 
   return get_timetrace_file(argv[path_id], std::move(cmd_builder.str()),
                             std::move(obj_path));
