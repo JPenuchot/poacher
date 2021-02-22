@@ -2,7 +2,7 @@
 add_custom_target(brainfuck_benchmark)
 
 function(add_compile_benchmark target_name output file)
-  add_library(${target_name} OBJECT ${file})
+  add_library(${target_name} OBJECT EXCLUDE_FROM_ALL ${file})
   target_include_directories(${target_name} PUBLIC "../include")
   add_dependencies(${target_name} time-trace-wrapper)
 
