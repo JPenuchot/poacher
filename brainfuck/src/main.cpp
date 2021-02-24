@@ -4,8 +4,6 @@ constexpr auto const hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
-void check(int) {}
-
 int main() {
   namespace bf = brainfuck;
 
