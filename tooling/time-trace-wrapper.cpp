@@ -14,8 +14,9 @@ int get_timetrace_file(std::filesystem::path const out, std::string cmd,
 
   // Run program
   std::system(cmd.c_str());
-  if (auto const out_parent = out.parent_path(); !out_parent.empty())
+  if (auto const out_parent = out.parent_path(); !out_parent.empty()) {
     fs::create_directories(out.parent_path());
+  }
 
   fs::copy_file(obj_path.replace_extension(".json"), out,
                 fs::copy_options::overwrite_existing);
@@ -45,17 +46,20 @@ int main(int argc, char const *argv[]) {
   for (auto beg = &argv[cmd_start_id + 1], end = &argv[argc]; beg < end;
        beg++) {
     // Object path finding
-    if (*beg == std::string_view("-o") && (beg + 1) != end)
+    if (*beg == std::string_view("-o") && (beg + 1) != end) {
       obj_path = *(beg + 1);
+    }
 
     if (*beg == std::string_view("-ftime-trace") ||
-        *beg == std::string_view("--ftime-trace"))
+        *beg == std::string_view("--ftime-trace")) {
       has_time_trace_flag = true;
+    }
     cmd_builder << ' ' << *beg;
   }
 
-  if (!has_time_trace_flag)
+  if (!has_time_trace_flag) {
     cmd_builder << " -ftime-trace";
+  }
 
   return get_timetrace_file(argv[path_id], std::move(cmd_builder.str()),
                             std::move(obj_path));
