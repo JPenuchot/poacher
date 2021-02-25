@@ -7,6 +7,10 @@
 
 #include <nlohmann/json.hpp>
 
+#include <imgui.h>
+#include <implot.h>
+#include <implot_internal.h>
+
 using raw_entry_t = std::tuple<std::filesystem::path, nlohmann::json>;
 
 struct entry_t {
