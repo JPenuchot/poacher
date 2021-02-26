@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(poacher)
 
 include(cmake/fetch_conan.cmake)
-include(cmake/fetch_implot.cmake)
 include(cmake/options.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
