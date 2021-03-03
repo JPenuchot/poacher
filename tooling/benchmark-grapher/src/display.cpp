@@ -16,7 +16,7 @@ sciplot::Plot make_plot(category_t const &cat) {
   auto const &[name, entries] = cat;
 
   plot.xlabel("Benchmark Size Factor");
-  plot.ylabel("CodeGen Function Time (ms)");
+  plot.ylabel("CodeGen Function Time Per Size factor (ms)");
 
   std::vector<measure_t> x;
   std::vector<measure_t> y;
@@ -41,8 +41,10 @@ sciplot::Plot make_plot(category_t const &cat) {
   // - per_function_passes
 
   for (auto const &e : entries) {
-    x.push_back(std::atoi(e.name.c_str()));
-    y.push_back(e.instantiate_function);
+    auto const xx = std::atoi(e.name.c_str());
+    auto const yy = e.instantiate_function / xx;
+    x.push_back(xx);
+    y.push_back(yy);
   }
 
   plot.drawCurveWithPoints(x, y).label(name);
