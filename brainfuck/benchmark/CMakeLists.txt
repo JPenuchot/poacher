@@ -9,7 +9,7 @@ function(add_compile_benchmark target_name output file)
   set_target_properties(${target_name}
     PROPERTIES
       CXX_COMPILER_LAUNCHER
-        "${CMAKE_BINARY_DIR}/tooling/time-trace-wrapper;${output}"
+        "${CMAKE_BINARY_DIR}/bin/time-trace-wrapper;${output}"
     )
 
   add_dependencies(brainfuck_benchmark ${target_name})
@@ -19,20 +19,42 @@ endfunction(add_compile_benchmark)
 
 add_compile_benchmark(__baseline baseline.json baseline.cpp)
 
-add_compile_benchmark(__hello_world_1 hello_world/1.json hello_world/1.cpp)
-add_compile_benchmark(__hello_world_2 hello_world/2.json hello_world/2.cpp)
-add_compile_benchmark(__hello_world_3 hello_world/3.json hello_world/3.cpp)
-add_compile_benchmark(__hello_world_4 hello_world/4.json hello_world/4.cpp)
-add_compile_benchmark(__hello_world_5 hello_world/5.json hello_world/5.cpp)
+add_compile_benchmark(__hello_world_01 hello_world/01.json hello_world/01.cpp)
+add_compile_benchmark(__hello_world_02 hello_world/02.json hello_world/02.cpp)
+add_compile_benchmark(__hello_world_03 hello_world/03.json hello_world/03.cpp)
+add_compile_benchmark(__hello_world_04 hello_world/04.json hello_world/04.cpp)
+add_compile_benchmark(__hello_world_05 hello_world/05.json hello_world/05.cpp)
+add_compile_benchmark(__hello_world_06 hello_world/06.json hello_world/06.cpp)
+add_compile_benchmark(__hello_world_07 hello_world/07.json hello_world/07.cpp)
+add_compile_benchmark(__hello_world_08 hello_world/08.json hello_world/08.cpp)
+add_compile_benchmark(__hello_world_09 hello_world/09.json hello_world/09.cpp)
+add_compile_benchmark(__hello_world_10 hello_world/10.json hello_world/10.cpp)
 
-add_compile_benchmark(__imbricated_loop_01 imbricated_loop/01.json imbricated_loop/01.cpp)
-add_compile_benchmark(__imbricated_loop_02 imbricated_loop/02.json imbricated_loop/02.cpp)
-add_compile_benchmark(__imbricated_loop_03 imbricated_loop/03.json imbricated_loop/03.cpp)
-add_compile_benchmark(__imbricated_loop_04 imbricated_loop/04.json imbricated_loop/04.cpp)
-add_compile_benchmark(__imbricated_loop_05 imbricated_loop/05.json imbricated_loop/05.cpp)
-add_compile_benchmark(__imbricated_loop_10 imbricated_loop/10.json imbricated_loop/10.cpp)
-add_compile_benchmark(__imbricated_loop_20 imbricated_loop/20.json imbricated_loop/20.cpp)
-add_compile_benchmark(__imbricated_loop_30 imbricated_loop/30.json imbricated_loop/30.cpp)
-add_compile_benchmark(__imbricated_loop_40 imbricated_loop/40.json imbricated_loop/40.cpp)
+add_compile_benchmark(__imbricated_loops_01 imbricated_loops/01.json imbricated_loops/01.cpp)
+add_compile_benchmark(__imbricated_loops_02 imbricated_loops/02.json imbricated_loops/02.cpp)
+add_compile_benchmark(__imbricated_loops_03 imbricated_loops/03.json imbricated_loops/03.cpp)
+add_compile_benchmark(__imbricated_loops_04 imbricated_loops/04.json imbricated_loops/04.cpp)
+add_compile_benchmark(__imbricated_loops_05 imbricated_loops/05.json imbricated_loops/05.cpp)
+add_compile_benchmark(__imbricated_loops_10 imbricated_loops/10.json imbricated_loops/10.cpp)
+add_compile_benchmark(__imbricated_loops_20 imbricated_loops/20.json imbricated_loops/20.cpp)
+add_compile_benchmark(__imbricated_loops_30 imbricated_loops/30.json imbricated_loops/30.cpp)
+add_compile_benchmark(__imbricated_loops_40 imbricated_loops/40.json imbricated_loops/40.cpp)
 
-add_custom_target(benchmark_graph)
+add_compile_benchmark(__consecutive_loops_01 consecutive_loops/01.json consecutive_loops/01.cpp)
+add_compile_benchmark(__consecutive_loops_02 consecutive_loops/02.json consecutive_loops/02.cpp)
+add_compile_benchmark(__consecutive_loops_03 consecutive_loops/03.json consecutive_loops/03.cpp)
+add_compile_benchmark(__consecutive_loops_04 consecutive_loops/04.json consecutive_loops/04.cpp)
+add_compile_benchmark(__consecutive_loops_05 consecutive_loops/05.json consecutive_loops/05.cpp)
+add_compile_benchmark(__consecutive_loops_10 consecutive_loops/10.json consecutive_loops/10.cpp)
+add_compile_benchmark(__consecutive_loops_20 consecutive_loops/20.json consecutive_loops/20.cpp)
+add_compile_benchmark(__consecutive_loops_30 consecutive_loops/30.json consecutive_loops/30.cpp)
+add_compile_benchmark(__consecutive_loops_40 consecutive_loops/40.json consecutive_loops/40.cpp)
+
+add_custom_target(benchmark-graph
+  COMMAND
+  "${CMAKE_BINARY_DIR}/bin/benchmark-grapher" "benchmark-graph.svg"
+    "baseline.json"
+    "hello_world"
+    "imbricated_loops"
+    "consecutive_loops"
+  DEPENDS benchmark-grapher brainfuck_benchmark)
