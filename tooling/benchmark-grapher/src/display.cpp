@@ -41,9 +41,9 @@ sciplot::Plot make_plot(category_t const &cat) {
   // - per_function_passes
 
   for (auto const &e : entries) {
-    if (xx = 0)
-      continue;
     auto const xx = std::atoi(e.name.c_str());
+    if (xx == 0)
+      continue;
     auto const yy = e.instantiate_function / xx;
     x.push_back(xx);
     y.push_back(yy);
