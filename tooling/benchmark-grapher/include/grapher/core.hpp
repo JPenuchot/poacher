@@ -85,40 +85,40 @@ auto constexpr measure_kind_iterable = {
 /// Get the measure designated by m in e
 constexpr measure_t get_measure(entry_t const &e, measure_kind_t m) {
   switch (m) {
-    case execute_compiler_v:
-      return e.execute_compiler;
-    case frontend_v:
-      return e.frontend;
-    case source_v:
-      return e.source;
-    case instantiate_function_v:
-      return e.instantiate_function;
-    case parse_class_v:
-      return e.parse_class;
-    case instantiate_class_v:
-      return e.instantiate_class;
-    case backend_v:
-      return e.backend;
-    case opt_module_v:
-      return e.opt_module;
-    case parse_template_v:
-      return e.parse_template;
-    case opt_function_v:
-      return e.opt_function;
-    case run_pass_v:
-      return e.run_pass;
-    case per_module_passes_v:
-      return e.per_module_passes;
-    case perform_pending_instantiations_v:
-      return e.perform_pending_instantiations;
-    case run_loop_pass_v:
-      return e.run_loop_pass;
-    case code_gen_passes_v:
-      return e.code_gen_passes;
-    case code_gen_function_v:
-      return e.code_gen_function;
-    case per_function_passes_v:
-      return e.per_function_passes;
+  case execute_compiler_v:
+    return e.execute_compiler;
+  case frontend_v:
+    return e.frontend;
+  case source_v:
+    return e.source;
+  case instantiate_function_v:
+    return e.instantiate_function;
+  case parse_class_v:
+    return e.parse_class;
+  case instantiate_class_v:
+    return e.instantiate_class;
+  case backend_v:
+    return e.backend;
+  case opt_module_v:
+    return e.opt_module;
+  case parse_template_v:
+    return e.parse_template;
+  case opt_function_v:
+    return e.opt_function;
+  case run_pass_v:
+    return e.run_pass;
+  case per_module_passes_v:
+    return e.per_module_passes;
+  case perform_pending_instantiations_v:
+    return e.perform_pending_instantiations;
+  case run_loop_pass_v:
+    return e.run_loop_pass;
+  case code_gen_passes_v:
+    return e.code_gen_passes;
+  case code_gen_function_v:
+    return e.code_gen_function;
+  case per_function_passes_v:
+    return e.per_function_passes;
   }
   return -1;
 }
@@ -126,40 +126,40 @@ constexpr measure_t get_measure(entry_t const &e, measure_kind_t m) {
 /// Get the measure name of m in a string_view
 constexpr std::string_view get_measure_name(measure_kind_t m) {
   switch (m) {
-    case execute_compiler_v:
-      return "Execute Compiler";
-    case frontend_v:
-      return "Frontend";
-    case source_v:
-      return "Source";
-    case instantiate_function_v:
-      return "Instantiate Function";
-    case parse_class_v:
-      return "Parse Class";
-    case instantiate_class_v:
-      return "Instantiate Class";
-    case backend_v:
-      return "Backend";
-    case opt_module_v:
-      return "Opt Module";
-    case parse_template_v:
-      return "Parse Template";
-    case opt_function_v:
-      return "Opt Function";
-    case run_pass_v:
-      return "Run Pass";
-    case per_module_passes_v:
-      return "Per Module Passes";
-    case perform_pending_instantiations_v:
-      return "Perform Pending Instantiations";
-    case run_loop_pass_v:
-      return "Run Loop Pass";
-    case code_gen_passes_v:
-      return "Code Gen Passes";
-    case code_gen_function_v:
-      return "Code Gen Function";
-    case per_function_passes_v:
-      return "Per Function Passes";
+  case execute_compiler_v:
+    return "Execute Compiler";
+  case frontend_v:
+    return "Frontend";
+  case source_v:
+    return "Source";
+  case instantiate_function_v:
+    return "Instantiate Function";
+  case parse_class_v:
+    return "Parse Class";
+  case instantiate_class_v:
+    return "Instantiate Class";
+  case backend_v:
+    return "Backend";
+  case opt_module_v:
+    return "Opt Module";
+  case parse_template_v:
+    return "Parse Template";
+  case opt_function_v:
+    return "Opt Function";
+  case run_pass_v:
+    return "Run Pass";
+  case per_module_passes_v:
+    return "Per Module Passes";
+  case perform_pending_instantiations_v:
+    return "Perform Pending Instantiations";
+  case run_loop_pass_v:
+    return "Run Loop Pass";
+  case code_gen_passes_v:
+    return "Code Gen Passes";
+  case code_gen_function_v:
+    return "Code Gen Function";
+  case per_function_passes_v:
+    return "Per Function Passes";
   }
   return "Invalid";
 }
@@ -170,4 +170,4 @@ using category_t = std::tuple<std::string, std::vector<entry_t>>;
 /// Benchmark categories
 using categories_t = std::vector<category_t>;
 
-}  // namespace grapher
+} // namespace grapher
