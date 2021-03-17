@@ -1,8 +1,9 @@
 #include <algorithm>
-#include <grapher/display.hpp>
 #include <iostream>
-#include <sciplot/sciplot.hpp>
 #include <string>
+
+#include <grapher/display.hpp>
+#include <sciplot/sciplot.hpp>
 
 // Feature list:
 // - execute_compiler
@@ -53,6 +54,7 @@ sciplot::Plot make_plot(category_t const &cat) {
   plot.size(1024, 1024);
   plot.xlabel("Benchmark Size Factor");
   plot.ylabel("Time Per Size factor (µs)");
+  plot.palette("spectral");
 
   using vec = std::vector<measure_t>;
 
@@ -62,15 +64,24 @@ sciplot::Plot make_plot(category_t const &cat) {
     x.push_back(std::atoi(e.name.c_str()));
   }
 
-  if (x.size() == 0) return sp::Plot();
+  if (x.size() == 0) {
+    return sp::Plot();
+  }
 
   vec ylow(x.size());
   vec yhigh(x.size(), 0.);
 
   for (measure_kind_t measure_kind : measures) {
+    // Previous high becomes new low
     std::swap(ylow, yhigh);
-    std::transform(entries.begin(), entries.end(), yhigh.begin(),
-                   [&](auto const &e) { return get_measure(e, measure_kind); });
+
+    // Summing up measurements
+    std::transform(entries.begin(), entries.end(), ylow.begin(), yhigh.begin(),
+                   [&](auto const &ehigh, auto const &mlow) {
+                     return mlow + get_measure(ehigh, measure_kind);
+                   });
+
+    // Draw
     plot.drawWithVecs("filledcurves", x, ylow, yhigh)
         .label(std::string(get_measure_name(measure_kind)));
   }
@@ -82,7 +93,9 @@ void graph(categories_t const &cats, std::filesystem::path const &p) {
   namespace sp = sciplot;
   std::vector<sp::Plot> plots;
 
-  for (auto const &cat : cats) make_plot(cat).show();
+  for (auto const &cat : cats) {
+    make_plot(cat).show();
+  }
 }
 
-}  // namespace grapher
+} // namespace grapher
