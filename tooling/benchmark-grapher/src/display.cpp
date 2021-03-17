@@ -1,10 +1,8 @@
-#include <grapher/display.hpp>
-
 #include <algorithm>
+#include <grapher/display.hpp>
 #include <iostream>
-#include <string>
-
 #include <sciplot/sciplot.hpp>
+#include <string>
 
 // Feature list:
 // - execute_compiler
@@ -30,29 +28,52 @@ namespace grapher {
 sciplot::Plot make_plot(category_t const &cat) {
   namespace sp = sciplot;
 
-  sp::Plot plot;
-
-  constexpr measure_kind_t measure_kind = code_gen_function_v;
+  auto const measures = {
+      // execute_compiler_v,
+      // frontend_v,
+      // backend_v,
+      // run_pass_v,
+      source_v,
+      instantiate_function_v,
+      parse_class_v,
+      instantiate_class_v,
+      opt_module_v,
+      parse_template_v,
+      opt_function_v,
+      per_module_passes_v,
+      perform_pending_instantiations_v,
+      run_loop_pass_v,
+      code_gen_passes_v,
+      code_gen_function_v,
+      per_function_passes_v,
+  };
 
   auto const &[name, entries] = cat;
-
+  sp::Plot plot;
+  plot.size(1024, 1024);
   plot.xlabel("Benchmark Size Factor");
-  plot.ylabel(std::string(get_measure_name(measure_kind)) +
-              " Time Per Size factor (µs)");
+  plot.ylabel("Time Per Size factor (µs)");
 
-  std::vector<measure_t> x;
-  std::vector<measure_t> y;
+  using vec = std::vector<measure_t>;
+
+  vec x;
 
   for (auto const &e : entries) {
-    auto const xx = std::atoi(e.name.c_str());
-    if (xx == 0)
-      continue;
-    auto const yy = get_measure(e, measure_kind) / xx;
-    x.push_back(xx);
-    y.push_back(yy);
+    x.push_back(std::atoi(e.name.c_str()));
   }
 
-  plot.drawCurveWithPoints(x, y).label(name);
+  if (x.size() == 0) return sp::Plot();
+
+  vec ylow(x.size());
+  vec yhigh(x.size(), 0.);
+
+  for (measure_kind_t measure_kind : measures) {
+    std::swap(ylow, yhigh);
+    std::transform(entries.begin(), entries.end(), yhigh.begin(),
+                   [&](auto const &e) { return get_measure(e, measure_kind); });
+    plot.drawWithVecs("filledcurves", x, ylow, yhigh)
+        .label(std::string(get_measure_name(measure_kind)));
+  }
 
   return plot;
 }
@@ -61,8 +82,7 @@ void graph(categories_t const &cats, std::filesystem::path const &p) {
   namespace sp = sciplot;
   std::vector<sp::Plot> plots;
 
-  for (auto const &cat : cats)
-    make_plot(cat).show();
+  for (auto const &cat : cats) make_plot(cat).show();
 }
 
-} // namespace grapher
+}  // namespace grapher
