@@ -2,6 +2,7 @@
 
 #include <cest/memory.hpp>
 #include <cest/vector.hpp>
+#include <unistd.h>
 
 namespace brainfuck {
 
@@ -67,17 +68,24 @@ enum ast_node_kind_t : std::uint8_t {
 };
 
 /// Parent class for any AST node type, holds its type as an ast_node_kind_t
-class ast_node_t {
+struct node_interface_t {
 private:
   ast_node_kind_t kind_;
 
 protected:
-  constexpr ast_node_t(ast_node_kind_t kind) : kind_(kind){};
+  constexpr node_interface_t(ast_node_kind_t kind) : kind_(kind){};
 
 public:
   /// Returns the node kind tag.
   constexpr ast_node_kind_t get_kind() const { return kind_; }
-  constexpr virtual ~ast_node_t() = default;
+  constexpr virtual ~node_interface_t() = default;
+};
+
+/// Helper class
+template <typename Child> struct make_visitable_t {
+  template <typename F> constexpr auto visit(F &&f) const {
+    return f(*static_cast<Child const *>(this));
+  }
 };
 
 // Helpers
@@ -86,7 +94,7 @@ public:
 using token_vec_t = cest::vector<token_t>;
 
 /// AST node pointer helper type
-using ast_node_ptr_t = cest::unique_ptr<ast_node_t>;
+using ast_node_ptr_t = cest::unique_ptr<node_interface_t>;
 
 /// AST node vector helper type
 using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
@@ -94,20 +102,18 @@ using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
 // !Helpers
 
 /// AST node type for single Brainfuck tokens
-class ast_token_t : public ast_node_t {
+struct ast_token_t : node_interface_t, make_visitable_t<ast_token_t> {
   token_t token_;
 
 public:
-  constexpr ast_token_t(token_t t) : ast_node_t(ast_token_v), token_(t) {}
+  constexpr ast_token_t(token_t t) : node_interface_t(ast_token_v), token_(t) {}
 
   /// Returns the token's value.
   constexpr token_t get_token() const { return token_; }
-
-  constexpr ~ast_token_t() = default;
 };
 
 /// AST node type for Brainfuck code blocks
-class ast_block_t : public ast_node_t {
+struct ast_block_t : node_interface_t, make_visitable_t<ast_block_t> {
 public:
   using node_ptr_t = ast_node_ptr_t;
 
@@ -116,51 +122,47 @@ private:
 
 public:
   constexpr ast_block_t(ast_node_vec_t &&content)
-      : ast_node_t(ast_block_v), content_(std::move(content)) {}
+      : node_interface_t(ast_block_v), content_(std::move(content)) {}
 
   constexpr ast_block_t(ast_block_t &&v) = default;
-  constexpr ast_block_t(ast_block_t const &v) = delete;
-
   constexpr ast_block_t &operator=(ast_block_t &&v) = default;
+
+  constexpr ast_block_t(ast_block_t const &v) = delete;
   constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
   /// Returns a const reference to its content.
   constexpr ast_node_vec_t const &get_content() const { return content_; }
   constexpr ast_node_vec_t &get_content() { return content_; }
-
-  constexpr ~ast_block_t() = default;
 };
 
 /// AST node type for Brainfuck while loop
-class ast_while_t : public ast_node_t {
+struct ast_while_t : node_interface_t, make_visitable_t<ast_while_t> {
   ast_block_t block_;
 
 public:
   constexpr ast_while_t(ast_block_t &&block)
-      : ast_node_t(ast_while_v), block_(std::move(block)) {}
+      : node_interface_t(ast_while_v), block_(std::move(block)) {}
 
   /// Returns a const reference to its block.
   constexpr ast_block_t const &get_block() const { return block_; }
   constexpr ast_block_t &get_block() { return block_; }
-
-  constexpr ~ast_while_t() = default;
 };
 
 // isa implementation
 
 /// Returns true if the AST node holds a node of specified type by looking up
 /// its ast_node_kind_t element, otherwise false.
-template <typename T> constexpr bool isa(ast_node_t const &n);
+template <typename T> constexpr bool isa(node_interface_t const &n);
 
-template <> constexpr bool isa<ast_token_t>(ast_node_t const &n) {
+template <> constexpr bool isa<ast_token_t>(node_interface_t const &n) {
   return n.get_kind() == ast_token_v;
 }
 
-template <> constexpr bool isa<ast_block_t>(ast_node_t const &n) {
+template <> constexpr bool isa<ast_block_t>(node_interface_t const &n) {
   return n.get_kind() == ast_block_v;
 }
 
-template <> constexpr bool isa<ast_while_t>(ast_node_t const &n) {
+template <> constexpr bool isa<ast_while_t>(node_interface_t const &n) {
   return n.get_kind() == ast_while_v;
 }
 
@@ -178,6 +180,17 @@ constexpr bool isa(cest::unique_ptr<U> const &p) {
 template <typename T, typename U>
 constexpr T *getas(cest::unique_ptr<U> const &p) {
   return isa<T>(p) ? static_cast<T *>(p.get()) : nullptr;
+}
+
+template <typename F> constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
+  switch (p->get_kind()) {
+  case ast_token_v:
+    return getas<ast_token_t>(p)->visit(f);
+  case ast_block_v:
+    return getas<ast_block_t>(p)->visit(f);
+  case ast_while_v:
+    return getas<ast_while_t>(p)->visit(f);
+  }
 }
 
 } // namespace brainfuck

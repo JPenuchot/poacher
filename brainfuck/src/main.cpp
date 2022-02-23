@@ -1,22 +1,27 @@
-#include <brainfuck/brainfuck.hpp>
+#include <brainfuck/ast.hpp>
+#include <brainfuck/ir/expression_template.hpp>
+#include <brainfuck/ir/flat.hpp>
+#include <brainfuck/parsers/naive.hpp>
+#include <brainfuck/program.hpp>
+#include <cstddef>
 
-constexpr auto const hello_world =
+constexpr const char *hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
-int main() {
+template <auto const &Program> constexpr auto to_flat_ast() {
   namespace bf = brainfuck;
+  namespace bflat = bf::flat;
 
-  bf::program_state_t state;
-  state.i = 0;
-  state.data = {0};
+  // Calculating size
+  constexpr size_t N = bflat::flatten(bf::parse_ast(Program)).size();
+  bflat::fixed_flat_ast_t<N> arr;
 
-  run(bf::to_ir([]() constexpr { return bf::parse_ast(hello_world); }), state);
+  // Building array from vector
+  bflat::flat_ast_t ast_vec = bflat::flatten(bf::parse_ast(Program));
+  std::copy(ast_vec.begin(), ast_vec.end(), arr.begin());
 
-  // bf::backends::nttp::run_node_ptr<bf::parse_ast(hello_world)>(state);
-
-  // auto ast = bf::parse_ast(hello_world);
-
-  // consteval -> brainfuck::meta::gen_fragment<reflexpr(state)>(
-  //    bf::parse_ast(hello_world));
+  return arr;
 }
+
+int main() { constexpr auto val = to_flat_ast<hello_world>(); }
