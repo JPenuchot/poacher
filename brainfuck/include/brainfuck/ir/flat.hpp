@@ -6,14 +6,11 @@
 // this form is *very* close to its original one.
 
 #include "brainfuck/program.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdio>
-#include <iterator>
-#include <limits>
-#include <optional>
-#include <utility>
 #include <variant>
 
 #include <cest/vector.hpp>
