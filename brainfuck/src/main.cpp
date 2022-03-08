@@ -21,7 +21,7 @@ template <auto const &ProgramString> constexpr auto to_flat_ast() {
 }
 
 constexpr auto FlatAst =
-    to_flat_ast<brainfuck::example_programs::hello_world>();
+    to_flat_ast<brainfuck::example_programs::mandelbrot>();
 
 int main() {
   namespace bf = brainfuck;
