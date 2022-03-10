@@ -51,46 +51,56 @@ template <size_t N> using fixed_flat_ast_t = std::array<flat_node_t, N>;
 
 /// Support structure for generate_blocks function
 struct block_gen_status_t {
+  /// Flat AST blocks, result of block_gen
   cest::vector<flat_ast_t> blocks;
+
+  /// Keeping track of which block is being generated
   size_t block_pos = 0;
+
+  /// Keeping track of the size of the AST
+  size_t total_size = 0;
 };
 
 /// Extracts an AST into a vector of blocks of contiguous operations
-constexpr void block_gen(ast_node_ptr_t const &p, block_gen_status_t &);
+constexpr void block_gen(ast_node_ptr_t const &, block_gen_status_t &);
 
-/// generate_blocksing for a single AST token. Basically just a push_back.
-constexpr void block_gen(ast_token_t const &n, block_gen_status_t &status) {
-  status.blocks[status.block_pos].push_back(flat_token_t{n.get_token()});
+/// block_gen for a single AST token. Basically just a push_back.
+constexpr void block_gen(ast_token_t const &tok, block_gen_status_t &s) {
+  s.blocks[s.block_pos].push_back(flat_token_t{tok.get_token()});
 }
 
-/// generate_blocksing for an AST block.
-constexpr void block_gen(ast_block_t const &n, block_gen_status_t &status) {
-  size_t const previous_pos = status.block_pos;
+/// block_gen for an AST block.
+constexpr void block_gen(ast_block_t const &blo, block_gen_status_t &s) {
+  // Save & update block pos before adding a block
+  size_t const previous_pos = s.block_pos;
+  s.block_pos = s.blocks.size();
+  s.blocks.emplace_back();
 
-  status.block_pos = status.blocks.size();
-  status.blocks.emplace_back();
+  // Preallocating
+  s.blocks[s.block_pos].reserve(blo.get_content().size() + 1);
+  s.total_size += blo.get_content().size() + 1;
 
   // Adding block descriptor as a prefix
-  status.blocks[status.block_pos].push_back(
-      flat_block_descriptor_t{n.get_content().size()});
+  s.blocks[s.block_pos].push_back(
+      flat_block_descriptor_t{blo.get_content().size()});
 
   // Flattening instructions
-  for (ast_node_ptr_t const &node : n.get_content()) {
-    block_gen(node, status);
+  for (ast_node_ptr_t const &node : blo.get_content()) {
+    block_gen(node, s);
   }
 
-  status.block_pos = previous_pos;
+  // Restoring block pos after recursive block processing
+  s.block_pos = previous_pos;
 }
 
-/// generate_blocksing for a while instruction. Create a new block, and flatten
-/// it.
-constexpr void block_gen(ast_while_t const &n, block_gen_status_t &status) {
-  status.blocks[status.block_pos].push_back(flat_while_t{status.blocks.size()});
-  block_gen(n.get_block(), status);
+/// block_gen for a while instruction.
+constexpr void block_gen(ast_while_t const &whi, block_gen_status_t &s) {
+  s.blocks[s.block_pos].push_back(flat_while_t{s.blocks.size()});
+  block_gen(whi.get_block(), s);
 }
 
-constexpr void block_gen(ast_node_ptr_t const &p, block_gen_status_t &status) {
-  visit([&status](auto const &v) { block_gen(v, status); }, p);
+constexpr void block_gen(ast_node_ptr_t const &p, block_gen_status_t &s) {
+  visit([&s](auto const &v) { block_gen(v, s); }, p);
 }
 
 // =============================================================================
@@ -103,7 +113,8 @@ constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
   block_gen_status_t bgs;
   block_gen(p, bgs);
 
-  cest::vector<flat_ast_t> semi_res = std::move(bgs.blocks);
+  cest::vector<flat_ast_t> const &semi_res = bgs.blocks;
+  res.reserve(bgs.total_size);
 
   cest::vector<size_t> block_map;
   block_map.reserve(semi_res.size());
@@ -135,9 +146,10 @@ constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
 
 template <auto const &Ast, size_t InstructionPos = 0>
 void run(program_state_t &s) {
+  constexpr flat_node_t const &Instr = Ast[InstructionPos];
 
-  if constexpr (std::holds_alternative<flat_token_t>(Ast[InstructionPos])) {
-    constexpr flat_token_t Token = std::get<flat_token_t>(Ast[InstructionPos]);
+  if constexpr (std::holds_alternative<flat_token_t>(Instr)) {
+    constexpr flat_token_t const &Token = std::get<flat_token_t>(Instr);
 
     if constexpr (Token.token == fwd_v) {
       ++s.i;
@@ -154,10 +166,9 @@ void run(program_state_t &s) {
     }
   }
 
-  else if constexpr (std::holds_alternative<flat_block_descriptor_t>(
-                         Ast[InstructionPos])) {
-    constexpr flat_block_descriptor_t BlockDescriptor =
-        std::get<flat_block_descriptor_t>(Ast[InstructionPos]);
+  else if constexpr (std::holds_alternative<flat_block_descriptor_t>(Instr)) {
+    constexpr flat_block_descriptor_t const &BlockDescriptor =
+        std::get<flat_block_descriptor_t>(Instr);
 
     [&]<size_t... InstructionIDs>(std::index_sequence<InstructionIDs...>) {
       (run<Ast, 1 + InstructionPos + InstructionIDs>(s), ...);
@@ -165,9 +176,8 @@ void run(program_state_t &s) {
     (std::make_index_sequence<BlockDescriptor.size>{});
   }
 
-  else if constexpr (std::holds_alternative<flat_while_t>(
-                         Ast[InstructionPos])) {
-    constexpr flat_while_t While = std::get<flat_while_t>(Ast[InstructionPos]);
+  else if constexpr (std::holds_alternative<flat_while_t>(Instr)) {
+    constexpr flat_while_t const &While = std::get<flat_while_t>(Instr);
     while (s.data[s.i]) {
       run<Ast, While.block_begin>(s);
     }
