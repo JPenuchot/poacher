@@ -8,7 +8,7 @@
 
 #include <brainfuck/ast.hpp>
 
-namespace brainfuck {
+namespace brainfuck::naive_parser {
 
 namespace detail {
 //------------------------------------------------------------------------------
@@ -71,4 +71,4 @@ constexpr ast_node_ptr_t parse_ast(cest::string const &input) {
       detail::parse_block(tok.cbegin(), tok.cend()));
 }
 
-} // namespace brainfuck
+} // namespace brainfuck::naive_parser
