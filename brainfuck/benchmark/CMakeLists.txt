@@ -1,43 +1,47 @@
-## Add compile-time benchmark to compare compile-time data
-add_custom_target(brainfuck-benchmark)
+include(FetchContent)
+FetchContent_Declare(
+  ctbench
+  GIT_REPOSITORY https://github.com/jpenuchot/ctbench.git
+  GIT_TAG main
+  GIT_SHALLOW)
+FetchContent_MakeAvailable(ctbench)
 
-function(add_compile_benchmark target_name output file)
-  add_library(${target_name} OBJECT EXCLUDE_FROM_ALL ${file})
-  target_include_directories(${target_name} PUBLIC "../include")
-  add_dependencies(${target_name} time-trace-wrapper)
+set(BF_BENCH_BEGIN 1)
+set(BF_BENCH_END 32)
+set(BF_BENCH_STEP 1)
+set(BF_BENCH_SAMPLES 10)
 
-  set_target_properties(${target_name}
-    PROPERTIES
-      CXX_COMPILER_LAUNCHER
-        "${CMAKE_BINARY_DIR}/bin/time-trace-wrapper;${output}"
-    )
+include_directories(../include)
 
-  add_dependencies(brainfuck-benchmark ${target_name})
-endfunction(add_compile_benchmark)
+# consecutive_loops
+ctbench_add_benchmark(
+  bfbench-consecutive_loops-et consecutive_loops/et.cpp ${BF_BENCH_BEGIN}
+  ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
 
-## Add a whole folder to benchmark targets
-function(add_benchmark_folder path)
-  file(GLOB_RECURSE benchmark_sources "${path}/*")
-  foreach(benchmark_source ${benchmark_sources})
-    # Generating benchmark target name and output filename
-    string(MD5 stem ${benchmark_source})
-    string(REPLACE ".cpp" ".json" benchmark_output ${benchmark_source})
+ctbench_add_benchmark(
+  bfbench-consecutive_loops-flat consecutive_loops/flat.cpp ${BF_BENCH_BEGIN}
+  ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
 
-    # Adding benchmark target
-    add_compile_benchmark("benchmark_${stem}"
-      ${benchmark_output} ${benchmark_source})
-  endforeach(benchmark_source)
-endfunction(add_benchmark_folder)
+ctbench_add_graph(bfbench-consecutive_loops compare.json bfbench-consecutive_loops-et bfbench-consecutive_loops-flat)
 
-# Benchmark targets
-add_benchmark_folder(hello_world)
-add_benchmark_folder(imbricated_loops)
-add_benchmark_folder(consecutive_loops)
+# hello_world
+ctbench_add_benchmark(
+  bfbench-hello_world-et hello_world/et.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END}
+  ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
 
-add_custom_target(benchmark-graph
-  COMMAND
-  "${CMAKE_BINARY_DIR}/bin/benchmark-grapher" "graphs"
-    "hello_world"
-    "imbricated_loops"
-    "consecutive_loops"
-  DEPENDS benchmark-grapher brainfuck-benchmark)
+ctbench_add_benchmark(
+  bfbench-hello_world-flat hello_world/flat.cpp ${BF_BENCH_BEGIN}
+  ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
+
+ctbench_add_graph(bfbench-hello_world compare.json bfbench-hello_world-et bfbench-hello_world-flat)
+
+# imbricated_loops
+ctbench_add_benchmark(
+  bfbench-imbricated_loops-et imbricated_loops/et.cpp ${BF_BENCH_BEGIN}
+  ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
+
+ctbench_add_benchmark(
+  bfbench-imbricated_loops-flat imbricated_loops/flat.cpp ${BF_BENCH_BEGIN}
+  ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
+
+ctbench_add_graph(bfbench-imbricated_loops compare.json bfbench-imbricated_loops-et bfbench-imbricated_loops-flat)
