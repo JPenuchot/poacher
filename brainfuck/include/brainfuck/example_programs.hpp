@@ -2,11 +2,11 @@
 
 namespace brainfuck::example_programs {
 
-constexpr const char *hello_world =
+static constexpr const char *hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
-constexpr const char *mandelbrot =
+static constexpr const char *mandelbrot =
     "A mandelbrot set fractal viewer in brainfuck written by Erik Bosman"
     "+++++++++++++[->++>>>+++++>++>+<<<<<<]>>>>>++++++>--->>>>>>>>>>+++++++++++"
     "++++[[>>>>>>>>>]+[<<<<<<<<<]>>>>>>>>>-]+[>>>>>>>>[-]>]<<<<<<<<<[<<<<<<<<<]"
