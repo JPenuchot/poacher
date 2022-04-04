@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(brainfuck)
 
+find_package(ctpg REQUIRED)
+
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.hpp" "src/*.hpp")
 
@@ -9,13 +11,19 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647)
 
+# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
+
 # Build
 add_executable(brainfuck ${SOURCES})
+
 target_include_directories(brainfuck PUBLIC "include/")
+target_link_libraries(brainfuck PUBLIC ctpg::ctpg)
 
 # Format
 add_custom_target(format-brainfuck COMMAND "clang-format" "-i" ${SOURCES}
                                            ${HEADERS})
 
 # Benchmarks
-add_subdirectory(benchmark)
+if(COMPILE_BENCHMARKS)
+  add_subdirectory(benchmark)
+endif()
