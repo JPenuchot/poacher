@@ -17,7 +17,7 @@ ctbench_add_benchmark(
   bfbench-consecutive_loops-flat consecutive_loops/flat.cpp ${BF_BENCH_BEGIN}
   ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
 
-ctbench_add_graph(bfbench-consecut3ive_loops compare.json
+ctbench_add_graph(bfbench-consecutive_loops compare.json
                   bfbench-consecutive_loops-et bfbench-consecutive_loops-flat)
 
 # hello_world
