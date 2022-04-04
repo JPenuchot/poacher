@@ -1,9 +1,11 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 
+#include <benchmark/et.hpp>
+
 #define REPEAT_STRING(z, n, str) str
 
 constexpr char const *program_string =
     BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING, "[")
         BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING, "+]+");
 
-int main () {}
+void foo() { run_program<program_string>(); }

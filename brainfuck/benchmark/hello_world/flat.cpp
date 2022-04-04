@@ -1,5 +1,7 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 
+#include <benchmark/flat.hpp>
+
 #define REPEAT_STRING(z, n, str) str
 
 constexpr char const *program_string =
@@ -7,4 +9,4 @@ constexpr char const *program_string =
                     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+"
                     "++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.");
 
-int main () {}
+void foo() { run_program<program_string>(); }
