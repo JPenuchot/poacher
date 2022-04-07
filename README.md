@@ -1,12 +1,27 @@
 # `poacher`
 
-The Library That Hunts Bisons - A C++ constexpr LR(1) parser generator
+C++ compile-time compiling experiments.
 
 ## Objectives
 
+Exploring arbitrary eDSLs in C++20, from parsing to codegen.
+
+Poacher used to be a project aiming towards a compile-time parser generator that
+works in constexpr functions, but this need is almost fulfilled by
+[ctpg](https://github.com/peter-winter/ctpg). Several issues remain and make the
+ctpg incompatible with constexpr functions, but I'm also working on fixing that.
+
+Yet I'm still working on handmade parsers (such as the Brainfuck parser that is
+fully functional), data structures for ASTs, ways to go from value-based data
+to type-based data, etc.
+
+For the record, here's the previous "objectives" narrative that was written a
+while ago:
+
 `constexpr` computation is all the rage in post-C++17 world. Works by
 [Hana Dusikova](https://github.com/hanickadot) on compile-time regular
-expressions and some great pioneering by [Jason Turner and Ben Deane](https://github.com/lefticus/constexpr_all_the_things/tree/master/src/include)
+expressions and some great pioneering by [Jason Turner and Ben Deane](
+https://github.com/lefticus/constexpr_all_the_things/tree/master/src/include)
 show that parsing arbitrary data or langages from compile-time available
 strings is a very valuable technique.
 
@@ -23,20 +38,14 @@ Happy.
 
 - [C'est](https://github.com/pkeir/cest)
 
-## How to use `poacher` ?
-
->TBD
-
-## Examples
-
-See [`examples/`](examples/readme.md)
-
 ## References
 
 - [Constexpr All The Things](
 https://github.com/lefticus/constexpr_all_the_things)
 - [Jean Privat's courses on compiling & LR(1) parsing](
 https://info.uqam.ca/~privat/INF5000/)
+- [ctpg](https://github.com/peter-winter/ctpg)
+- [Dragon Book](https://suif.stanford.edu/dragonbook/)
 
 ## Discuss
 
