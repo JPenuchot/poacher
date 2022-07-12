@@ -1,8 +1,13 @@
+#pragma once
+
+#include <asciimath/types.hpp>
+
 #include <algorithm>
 #include <array>
-#include <asciimath/types.hpp>
 #include <iterator>
+#include <ranges>
 #include <string_view>
+#include <vector>
 
 namespace asciimath::symbols {
 
@@ -1944,5 +1949,41 @@ constexpr auto find_symbol_def(std::string_view const &sv) {
       std::begin(symbol_table), std::end(symbol_table),
       [&sv](symbol_def_t const &def) -> bool { return sv == def.input; });
 }
+
+/// Filter symbols using a predicate
+template <std::predicate<symbol_def_t> auto Pred>
+static constexpr auto symbols_by_pred = []() {
+  // Generates a vector filtered using predicate Pred
+  constexpr auto gen_filtered_vector = []() -> std::vector<symbol_def_t> {
+    std::vector<symbol_def_t> symbols;
+    symbols.reserve(std::size(symbol_table));
+    std::copy_if(std::begin(symbol_table), std::end(symbol_table),
+                 std::back_inserter(symbols), Pred);
+    return symbols;
+  };
+
+  // Getting constexpr size
+  constexpr std::size_t Size = gen_filtered_vector().size();
+
+  // Initializing array
+  std::vector<symbol_def_t> res_v = gen_filtered_vector();
+  std::array<symbol_def_t, Size> res;
+  std::copy(res_v.begin(), res_v.end(), res.begin());
+
+  // Sorting by input token size
+  std::sort(res.begin(), res.end(),
+            [](symbol_def_t const &a, symbol_def_t const &b) -> bool {
+              return a.input.size() > b.input.size();
+            });
+
+  return res;
+}();
+
+/// Filter symbols using a predicate
+template <token_kind_t Kind>
+inline static constexpr auto symbols_by_kind =
+    symbols_by_pred<[](symbol_def_t const &def) -> bool {
+      return def.kind == Kind;
+    }>;
 
 } // namespace asciimath::symbols
