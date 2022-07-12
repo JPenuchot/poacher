@@ -1,7 +1,12 @@
+#include <algorithm>
+#include <array>
 #include <asciimath/types.hpp>
+#include <iterator>
+#include <string_view>
 
-namespace asciimath {
+namespace asciimath::symbols {
 
+// Symbol definitions taken from here:
 // https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js
 
 enum token_kind_t {
@@ -35,7 +40,8 @@ struct symbol_def_t {
 
 static constexpr bool fixphi = false;
 
-static constexpr symbol_def_t symbol_table[] = {
+/// AsciiMath symbol table
+static constexpr symbol_def_t symbol_table[]{
     // some greek symbols
     {
         .input = "alpha",
@@ -1932,4 +1938,11 @@ static constexpr symbol_def_t symbol_table[] = {
         //       codes : AMfrk
     }};
 
-} // namespace asciimath
+/// Find a symbol in the symbol table
+constexpr auto find_symbol_def(std::string_view const &sv) {
+  return std::find_if(
+      std::begin(symbol_table), std::end(symbol_table),
+      [&sv](symbol_def_t const &def) -> bool { return sv == def.input; });
+}
+
+} // namespace asciimath::symbols
