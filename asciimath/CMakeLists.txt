@@ -1,11 +1,10 @@
+cmake_minimum_required(VERSION 3.23)
+project(asciimath)
+
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.hpp" "src/*.hpp")
+
+set(CMAKE_CXX_STANDARD 20)
 
 # Build
 add_executable(asciimath ${SOURCES})
-target_include_directories(asciimath PUBLIC "include/")
-
-# Format
-add_custom_target(format-asciimath COMMAND "clang-format" "-i"
-  ${SOURCES} ${HEADERS})
-poacher_format_register(format-asciimath)
+target_include_directories(asciimath PUBLIC include)
