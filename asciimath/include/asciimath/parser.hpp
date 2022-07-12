@@ -320,7 +320,10 @@ public:
       return {};
     }
 
-    return {};
+    return {{*lparen_pr.get_opt(), make_expr_ptr(std::move(*expr_pr.get_opt())),
+             *rparen_pr.get_opt()},
+            begin,
+            get_pos()};
   }
 
   //----------------------------------------------------------------------------
