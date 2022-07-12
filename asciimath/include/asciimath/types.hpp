@@ -26,6 +26,8 @@
 // simp = constant | paren_expr | unary_expr | binary_expr | text
 // expr = ( simp ( fraction | sub | super ) )+
 
+// https://github.com/asciidoctor/asciimath/blob/master/lib/asciimath/parser.rb
+
 // Notes:
 // - std::string_view are being used to represent tokens, it is therefore
 // assumed that AST elements won't outlive the parser
