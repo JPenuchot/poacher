@@ -4,9 +4,11 @@
 
 #include <cest/memory.hpp>
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 // AsciiMath grammar:
 
@@ -14,7 +16,7 @@
 // symbol = /* any string in the symbol table */
 // number = '-'? [0-9]+ ( '.' [0-9]+ )?
 // constant = number | symbol | identifier
-// text = '"' [^"]* '"'
+// text = '"' [^"]* ' "'
 // binary_op = 'frac' | 'root' | 'stackrel'
 // binary_expr = binary_op simp simp
 // unary_op = 'sqrt' | 'text'
@@ -64,9 +66,7 @@ struct identifier_t {
 /// symbol := /* any string in the symbol table */
 struct symbol_t {
   std::string_view sym;
-};
-
-// TODO: Symbol table
+}; // TODO: Symbol table
 
 /// number := '-'? [0-9]+ ( '.' [0-9]+ )?
 struct number_t {
@@ -85,8 +85,8 @@ struct text_t {
 
 /// binary_op := 'frac' | 'root' | 'stackrel'
 struct binary_op_t {
-  std::string_view val;
-}; // TODO
+  std::size_t index;
+};
 
 /// binary_expr := binary_op simp simp
 struct binary_expr_t {
@@ -98,8 +98,8 @@ struct binary_expr_t {
 
 /// unary_op := 'sqrt' | 'text'
 struct unary_op_t {
-  std::string_view val;
-}; // TODO
+  std::size_t index;
+};
 
 /// unary_expr := unary_op simp
 struct unary_expr_t {
@@ -128,8 +128,9 @@ struct paren_expr_t {
 
 /// sub :=  '_' simp super?
 struct sub_t {
-  std::string_view val;
-}; // TODO
+  cest::unique_ptr<simp_t> simp_ptr;
+  std::optional<cest::unique_ptr<super_t>> super_ptr;
+};
 
 /// super := '^' simp
 struct super_t {
@@ -149,7 +150,14 @@ struct simp_t {
 
 /// expr := ( simp ( fraction | sub | super ) )+
 struct expr_t {
-  std::string_view val;
-}; // TODO
+  struct element_t {
+    using variant_t = std::variant<fraction_t, sub_t, super_t>;
+
+    simp_t simp;
+    variant_t next;
+  };
+
+  std::vector<element_t> content;
+};
 
 } // namespace asciimath

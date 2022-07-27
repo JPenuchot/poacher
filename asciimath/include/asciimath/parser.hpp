@@ -11,7 +11,6 @@
 
 #include <asciimath/symbols.hpp>
 #include <asciimath/types.hpp>
-#include <unistd.h>
 
 namespace asciimath {
 
@@ -110,6 +109,56 @@ public:
   // PARSING FUNCTIONS
   //
 
+  /// If the character is found, it will consume it and return true. Otherwise
+  /// it will return false. Does *not* trim whitespaces.
+  bool parse_char(std::string_view::value_type c) {
+    if (get_parse_view().starts_with(c)) {
+      consume(1);
+      return true;
+    }
+    return false;
+  }
+
+  /// If the string is found, it will consume it and return true. Otherwise it
+  /// will return false. Does *not* trim whitespaces.
+  bool parse_string(std::string_view const &sv) {
+    if (get_parse_view().starts_with(sv)) {
+      consume(sv.size());
+      return true;
+    }
+    return false;
+  }
+
+  /// Tries to parse a symbol of given kind, then returns the index of the
+  /// symbol definition in symbols_by_kind<Kind>.
+  template <symbols::symbol_kind_t Kind>
+  constexpr parse_result_t<std::size_t> parse_symbol_by_kind() {
+    trim_whitespaces();
+    std::string_view sv;
+    std::size_t begin = get_pos();
+
+    // Cannot be empty
+    if (sv.empty()) {
+      return {};
+    }
+
+    // Right bracket symbol static array
+    constexpr auto &symbols = symbols::symbols_by_kind<Kind>;
+
+    auto it = std::find_if(symbols.begin(), symbols.end(),
+                           [&](symbols::symbol_def_t const &def) -> bool {
+                             return sv.starts_with(def.input);
+                           });
+
+    // No matching symbol
+    if (it == symbols.end()) {
+      return {};
+    }
+
+    return {
+        {std::size_t(it - symbols.begin())}, begin, consume(it->input.size())};
+  }
+
   /// Base parse function
   template <typename T> constexpr parse_result_t<T> parse() { return {}; }
 
@@ -143,6 +192,8 @@ public:
 
   template <> constexpr parse_result_t<symbol_t> parse<symbol_t>() {
     // TODO
+
+    // Don't know what to do
     return {};
   }
 
@@ -155,19 +206,12 @@ public:
 
     std::size_t begin = get_pos();
 
-    int sign = 1;
     int val = 0;
+    int sign = parse_char('-') ? -1 : 1;
 
     // Should not be empty
     if (sv.empty()) {
       return {};
-    }
-
-    // Reading sign
-    if (sv.front() == '-') {
-      sign = -1;
-      sv.remove_prefix(1);
-      consume(1);
     }
 
     // First digit is mandatory
@@ -229,7 +273,8 @@ public:
   template <> constexpr parse_result_t<binary_op_t> parse<binary_op_t>() {
     trim_whitespaces();
 
-    // TODO
+    parse_result_t<std::size_t> binop_pr =
+        parse_symbol_by_kind<symbols::symbol_kind_t::binary_v>();
 
     return {};
   }
@@ -270,7 +315,11 @@ public:
   // unary_op = 'sqrt' | 'text'
 
   template <> constexpr parse_result_t<unary_op_t> parse<unary_op_t>() {
-    // TODO
+    if (parse_result_t<std::size_t> pr =
+            parse_symbol_by_kind<symbols::symbol_kind_t::unary_v>();
+        pr) {
+      return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
+    }
     return {};
   }
 
@@ -301,29 +350,13 @@ public:
 
   template <> constexpr parse_result_t<rparen_t> parse<rparen_t>() {
     trim_whitespaces();
-    std::string_view sv;
-    std::size_t begin = get_pos();
 
-    // Cannot be empty
-    if (sv.empty()) {
-      return {};
+    if (parse_result_t<std::size_t> pr =
+            parse_symbol_by_kind<symbols::rightbracket_v>();
+        pr) {
+      return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
-
-    // Right bracket symbol static array
-    constexpr auto &symbols = symbols::symbols_by_kind<symbols::rightbracket_v>;
-
-    auto it = std::find_if(symbols.begin(), symbols.end(),
-                           [&](symbols::symbol_def_t const &def) -> bool {
-                             return sv.starts_with(def.input);
-                           });
-
-    // No matching symbol
-    if (it == symbols.end()) {
-      return {};
-    }
-
-    return {
-        {std::size_t(it - symbols.begin())}, begin, consume(it->input.size())};
+    return {};
   }
 
   //----------------------------------------------------------------------------
@@ -331,30 +364,13 @@ public:
 
   template <> constexpr parse_result_t<lparen_t> parse<lparen_t>() {
     trim_whitespaces();
-    std::string_view sv;
-    std::size_t begin = get_pos();
 
-    // Cannot be empty
-    if (sv.empty()) {
-      return {};
+    if (parse_result_t<std::size_t> pr =
+            parse_symbol_by_kind<symbols::leftbracket_v>();
+        pr) {
+      return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
-
-    // Right bracket symbol static array
-    constexpr auto &symbols = symbols::symbols_by_kind<symbols::leftbracket_v>;
-
-    auto it = std::find_if(symbols.begin(), symbols.end(),
-                           [&](symbols::symbol_def_t const &def) -> bool {
-                             return sv.starts_with(def.input);
-                           });
-
-    // No matching symbol
-    if (it == symbols.end()) {
-      return {};
-    }
-
-    consume(it->input.size());
-    return {
-        {std::size_t(it - symbols.begin())}, begin, consume(it->input.size())};
+    return {};
   }
 
   //----------------------------------------------------------------------------
@@ -391,23 +407,30 @@ public:
 
   template <> constexpr parse_result_t<sub_t> parse<sub_t>() {
     trim_whitespaces();
-    std::string_view sv = get_parse_view();
-
     std::size_t begin = get_pos();
 
-    if (sv.empty() || sv.front() != '_') {
+    if (!parse_char('_')) {
       return {};
     }
-
-    sv.remove_prefix(1);
-    consume(1);
 
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
     if (!simp_pr) {
       return {};
     }
 
-    return {};
+    parse_result_t<super_t> super_pr = parse<super_t>();
+
+    if (super_pr) {
+      return {{cest::make_unique<simp_t>(std::move(*simp_pr.get_opt())),
+               cest::make_unique<super_t>(std::move(*super_pr.get_opt()))},
+              begin,
+              get_pos()};
+    }
+
+    return {{cest::make_unique<simp_t>(std::move(*simp_pr.get_opt())),
+             std::nullopt},
+            begin,
+            get_pos()};
   }
 
   //----------------------------------------------------------------------------
@@ -418,13 +441,9 @@ public:
     std::size_t begin = get_pos();
 
     // Checking for first char being a hat
-    if (std::string_view sv = get_parse_view();
-        sv.empty() || sv.front() != '^') {
+    if (!parse_char('^')) {
       return {};
     }
-
-    // Consoom hat
-    consume(1);
 
     // Parse simp
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
@@ -503,8 +522,40 @@ public:
   // expr = ( simp ( fraction | sub | super ) )+
 
   template <> constexpr parse_result_t<expr_t> parse<expr_t>() {
-    // TODO
-    return {};
+    trim_whitespaces();
+    std::size_t begin = get_pos();
+
+    expr_t expr;
+    for (parse_result_t<simp_t> simp_pr = parse<simp_t>(); simp_pr;
+         simp_pr = parse<simp_t>()) {
+      // Attempting to parse a fraction
+      if (parse_result_t<fraction_t> pr = parse<fraction_t>(); pr) {
+        expr.content.emplace_back(expr_t::element_t{
+            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
+        continue;
+      }
+
+      // Attempting to parse a sub
+      if (parse_result_t<sub_t> pr = parse<sub_t>(); pr) {
+        expr.content.emplace_back(expr_t::element_t{
+            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
+        continue;
+      }
+
+      // Attempting to parse a super
+      if (parse_result_t<super_t> pr = parse<super_t>(); pr) {
+        expr.content.emplace_back(expr_t::element_t{
+            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
+        continue;
+      }
+    }
+
+    // Failure if empty.
+    if (expr.content.empty()) {
+      return {};
+    }
+
+    return {std::move(expr), begin, get_pos()};
   }
 };
 
