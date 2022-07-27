@@ -1,14 +1,14 @@
 {
   "plotter": "compare",
   "draw_average": true,
-  "draw_points": false,
-  "plot_file_extension": ".svg",
+  "draw_points": true,
+  "plot_file_extensions": [".svg", ".png"],
   "value_json_pointer": "/dur",
-  "width": 1500,
+  "width": 800,
   "height": 500,
   "legend_title": "Timings",
-  "xlabel": "Benchmark size factor",
-  "ylabel": "Time (µs)",
+  "x_label": "Benchmark size factor",
+  "y_label": "Time (µs)",
   "group_descriptors": [
     {
       "name": "ExecuteCompiler",
