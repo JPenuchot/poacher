@@ -14,7 +14,7 @@ namespace asciimath::symbols {
 // Symbol definitions taken from here:
 // https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js
 
-enum token_kind_t {
+enum symbol_kind_t {
   binary_v,
   const_v,
   definition_v,
@@ -37,7 +37,9 @@ struct symbol_def_t {
   std::string_view atval = {};
   std::string_view output;
   std::string_view tex;
-  token_kind_t kind;
+
+  symbol_kind_t kind;
+
   bool acc = false;
   bool invisible = false;
   bool func = false;
@@ -1970,7 +1972,7 @@ static constexpr auto symbols_by_pred = []() {
   std::array<symbol_def_t, Size> res;
   std::copy(res_v.begin(), res_v.end(), res.begin());
 
-  // Sorting by input token size
+  // Sorting by input symbol size
   std::sort(res.begin(), res.end(),
             [](symbol_def_t const &a, symbol_def_t const &b) -> bool {
               return a.input.size() > b.input.size();
@@ -1980,7 +1982,7 @@ static constexpr auto symbols_by_pred = []() {
 }();
 
 /// Filter symbols using a predicate
-template <token_kind_t Kind>
+template <symbol_kind_t Kind>
 inline static constexpr auto symbols_by_kind =
     symbols_by_pred<[](symbol_def_t const &def) -> bool {
       return def.kind == Kind;
