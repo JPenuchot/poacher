@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.23)
 project(brainfuck)
 
 find_package(ctpg REQUIRED)
+
+set(COMPILE_BENCHMARKS OFF CACHE BOOL "Enable compile benchmarks")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.hpp" "src/*.hpp")
@@ -10,8 +12,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647)
-
-# set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
 
 # Build
 add_executable(brainfuck ${SOURCES})
