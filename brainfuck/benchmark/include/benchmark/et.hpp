@@ -7,8 +7,8 @@
 template <auto const &ProgramString> auto run_program() {
   brainfuck::program_state_t s;
 
-  brainfuck::run(brainfuck::to_ir([]() {
-                   return brainfuck::naive_parser::parse_ast(ProgramString);
-                 }),
-                 s);
+  brainfuck::expression_template::run(
+      brainfuck::expression_template::to_et(
+          []() { return brainfuck::naive_parser::parse_ast(ProgramString); }),
+      s);
 }
