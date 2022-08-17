@@ -5,6 +5,8 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(BUILD_TESTING ON CACHE BOOL "Enable or disable tests")
+
 # Build
 add_executable(asciimath ${SOURCES})
 target_include_directories(asciimath PUBLIC include)
