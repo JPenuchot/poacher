@@ -1,10 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <cctype>
-#include <cstddef>
 #include <locale>
-#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -19,25 +16,22 @@ namespace asciimath {
 // PARSING STRUCTURES
 //
 
-/// Manages parsing state by keeping track of the formula and its parsing state
+/// Manages parsing state by keeping track of the phrase and its parsing state
 class parser_t {
-  /// Formula string container
-  std::string _phrase;
+  /// Phrase string view
+  std::string_view _phrase;
 
   /// Current parsing position
   std::size_t _pos;
 
 public:
-  constexpr parser_t(std::string formula)
-      : _phrase(std::move(formula)), _pos(0) {}
+  constexpr parser_t(std::string_view phrase)
+      : _phrase(std::move(phrase)), _pos(0) {}
 
   /// Get current parsing position
   constexpr std::size_t get_pos() const { return _pos; }
 
-  /// Set parsing position
-  constexpr void set_pos(std::size_t v) { _pos = v; }
-
-  /// Get a string_view of the AsciiMath formula
+  /// Get a string_view of the AsciiMath phrase
   constexpr std::string_view get_phrase() const { return _phrase; }
 
   /// Get a string view of the remaining text to parse
@@ -55,6 +49,9 @@ public:
     return _pos;
   }
 
+  /// Resets parsing position back to a given state
+  constexpr void backtrack(std::size_t pos) { _pos = pos; }
+
   /// Trim whitespaces
   constexpr void trim_whitespaces() {
     _pos = std::find_if_not(_phrase.begin() + _pos, _phrase.end(),
@@ -68,9 +65,10 @@ public:
   template <typename T> class parse_result_t {
     std::optional<T> _value;
 
-    /// Begin position of the token in the formula string
+    /// Begin position of the token in the phrase
     std::size_t _begin_pos;
-    /// End position of the token in the formula string
+
+    /// End position of the token in the phrase
     std::size_t _end_pos;
 
   public:
@@ -91,10 +89,10 @@ public:
               pm.get_phrase().begin() + _end_pos};
     }
 
-    /// Get begin position of the token in the formula string
+    /// Get begin position of the token in the phrase string
     constexpr std::size_t get_begin_pos() const { return _begin_pos; }
 
-    /// Get end position of the token in the formula string
+    /// Get end position of the token in the phrase string
     constexpr std::size_t get_end_pos() const { return _end_pos; }
 
     /// Returns reference to value opt
@@ -109,9 +107,12 @@ public:
   // PARSING FUNCTIONS
   //
 
+  // Parsing function rules:
+  // - If parsing failed, the state of the parser should be unchanged
+
   /// If the character is found, it will consume it and return true. Otherwise
   /// it will return false. Does *not* trim whitespaces.
-  bool parse_char(std::string_view::value_type c) {
+  constexpr bool parse_char(std::string_view::value_type c) {
     if (get_parse_view().starts_with(c)) {
       consume(1);
       return true;
@@ -121,7 +122,7 @@ public:
 
   /// If the string is found, it will consume it and return true. Otherwise it
   /// will return false. Does *not* trim whitespaces.
-  bool parse_string(std::string_view const &sv) {
+  constexpr bool parse_string(std::string_view const &sv) {
     if (get_parse_view().starts_with(sv)) {
       consume(sv.size());
       return true;
@@ -134,8 +135,9 @@ public:
   template <symbols::symbol_kind_t Kind>
   constexpr parse_result_t<std::size_t> parse_symbol_by_kind() {
     trim_whitespaces();
+
     std::string_view sv;
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Cannot be empty
     if (sv.empty()) {
@@ -202,12 +204,18 @@ public:
 
   template <> constexpr parse_result_t<number_t> parse<number_t>() {
     trim_whitespaces();
-    std::string_view sv = get_parse_view();
 
-    std::size_t begin = get_pos();
+    std::string_view sv = get_parse_view();
+    std::string_view::const_iterator const parse_begin = sv.begin();
+    std::size_t const begin = get_pos();
 
     int val = 0;
-    int sign = parse_char('-') ? -1 : 1;
+    bool minus = false;
+
+    if (sv.starts_with('-')) {
+      minus = true;
+      sv.remove_prefix(1);
+    }
 
     // Should not be empty
     if (sv.empty()) {
@@ -225,16 +233,19 @@ public:
       val += sv.front() - '0';
 
       sv.remove_prefix(1);
-      consume(1);
     }
 
-    return {{val * sign}, begin, get_pos()};
+    return {{minus ? -val : val}, begin, std::size_t(sv.begin() - parse_begin)};
   }
 
   //----------------------------------------------------------------------------
   // constant = number | symbol | identifier
 
   template <> constexpr parse_result_t<constant_t> parse<constant_t>() {
+    trim_whitespaces();
+
+    std::size_t const begin = get_pos();
+
     // Number parsing attempt
     if (parse_result_t<number_t> number = parse<number_t>(); number) {
       return {
@@ -263,7 +274,17 @@ public:
   // text = '"' [^"]* '"'
 
   template <> constexpr parse_result_t<text_t> parse<text_t>() {
+    std::size_t original_pos = get_pos();
+    trim_whitespaces();
+
+    std::size_t const begin = get_pos();
+
     // TODO
+
+    if (!parse_char('\"'))
+      return {};
+
+    backtrack(original_pos);
     return {};
   }
 
@@ -272,11 +293,16 @@ public:
 
   template <> constexpr parse_result_t<binary_op_t> parse<binary_op_t>() {
     trim_whitespaces();
+    std::size_t const begin = get_pos();
 
     parse_result_t<std::size_t> binop_pr =
         parse_symbol_by_kind<symbols::symbol_kind_t::binary_v>();
 
-    return {};
+    if (!binop_pr) {
+      return {};
+    }
+
+    return {{*binop_pr.get_opt()}, begin, get_pos()};
   }
 
   //----------------------------------------------------------------------------
@@ -284,7 +310,7 @@ public:
 
   template <> constexpr parse_result_t<binary_expr_t> parse<binary_expr_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Binop parsing attempt
     parse_result_t<binary_op_t> binop_pr = parse<binary_op_t>();
@@ -320,6 +346,7 @@ public:
         pr) {
       return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
+
     return {};
   }
 
@@ -328,20 +355,23 @@ public:
 
   template <> constexpr parse_result_t<unary_expr_t> parse<unary_expr_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Unary op parsing attempt
     parse_result_t<unary_op_t> op_pr = parse<unary_op_t>();
     if (!op_pr) {
+      backtrack(begin);
       return {};
     }
 
     // Simp parsing attempt
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
     if (!simp_pr) {
+      backtrack(begin);
       return {};
     }
 
+    // TODO
     return {};
   }
 
@@ -378,20 +408,23 @@ public:
 
   template <> constexpr parse_result_t<paren_expr_t> parse<paren_expr_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     parse_result_t<lparen_t> lparen_pr = parse<lparen_t>();
     if (!lparen_pr) {
+      backtrack(begin);
       return {};
     }
 
     parse_result_t<expr_t> expr_pr = parse<expr_t>();
     if (!expr_pr) {
+      backtrack(begin);
       return {};
     }
 
     parse_result_t<rparen_t> rparen_pr = parse<rparen_t>();
     if (!rparen_pr) {
+      backtrack(begin);
       return {};
     }
 
@@ -407,7 +440,7 @@ public:
 
   template <> constexpr parse_result_t<sub_t> parse<sub_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     if (!parse_char('_')) {
       return {};
@@ -415,9 +448,11 @@ public:
 
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
     if (!simp_pr) {
+      backtrack(begin);
       return {};
     }
 
+    std::size_t const super_begin = get_pos();
     parse_result_t<super_t> super_pr = parse<super_t>();
 
     if (super_pr) {
@@ -427,6 +462,7 @@ public:
               get_pos()};
     }
 
+    backtrack(super_begin);
     return {{cest::make_unique<simp_t>(std::move(*simp_pr.get_opt())),
              std::nullopt},
             begin,
@@ -438,7 +474,7 @@ public:
 
   template <> constexpr parse_result_t<super_t> parse<super_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Checking for first char being a hat
     if (!parse_char('^')) {
@@ -448,6 +484,7 @@ public:
     // Parse simp
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
     if (!simp_pr) {
+      backtrack(begin);
       return {};
     }
 
@@ -461,20 +498,17 @@ public:
 
   template <> constexpr parse_result_t<fraction_t> parse<fraction_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Checking for first char being a slash
-    if (std::string_view sv = get_parse_view();
-        sv.empty() || sv.front() != '/') {
+    if (parse_char('/')) {
       return {};
     }
-
-    // Consoom slash
-    consume(1);
 
     // Parse simp
     parse_result_t<simp_t> simp_pr = parse<simp_t>();
     if (!simp_pr) {
+      backtrack(begin);
       return {};
     }
 
@@ -488,7 +522,7 @@ public:
 
   template <> constexpr parse_result_t<simp_t> parse<simp_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     // Constant parsing attempt
     if (parse_result_t<constant_t> pr = parse<constant_t>(); pr) {
@@ -515,6 +549,7 @@ public:
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
+    backtrack(begin);
     return {};
   }
 
@@ -523,7 +558,7 @@ public:
 
   template <> constexpr parse_result_t<expr_t> parse<expr_t>() {
     trim_whitespaces();
-    std::size_t begin = get_pos();
+    std::size_t const begin = get_pos();
 
     expr_t expr;
     for (parse_result_t<simp_t> simp_pr = parse<simp_t>(); simp_pr;
@@ -552,6 +587,7 @@ public:
 
     // Failure if empty.
     if (expr.content.empty()) {
+      backtrack(begin);
       return {};
     }
 
