@@ -8,3 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Build
 add_executable(asciimath ${SOURCES})
 target_include_directories(asciimath PUBLIC include)
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif(BUILD_TESTING)
