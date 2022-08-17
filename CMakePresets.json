@@ -1,0 +1,28 @@
+{
+  "version" : 4,
+  "cmakeMinimumRequired" : {
+    "major" : 3,
+    "minor" : 23,
+    "patch" : 0
+  },
+  "configurePresets" : [
+    {
+      "name" : "clangd",
+      "displayName" : "Clangd build",
+      "description" : "Provides a compile_commands.json file",
+      "generator" : "Ninja",
+      "binaryDir" : "${sourceDir}/build",
+      "cacheVariables" : {
+        "CMAKE_EXPORT_COMPILE_COMMANDS" : {
+          "type" : "BOOL",
+          "value" : "ON"
+        },
+        "CMAKE_CXX_COMPILER" : "clang++",
+        "CMAKE_C_COMPILER" : "clang",
+        "CMAKE_BUILD_TYPE" : "Debug",
+        "BUILD_TESTING" : "ON"
+      }
+    }
+  ],
+  "buildPresets" : []
+}
