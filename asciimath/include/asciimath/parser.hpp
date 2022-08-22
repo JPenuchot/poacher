@@ -321,9 +321,7 @@ public:
   template <> constexpr parse_result_t<ast::text_t> parse<ast::text_t>() {
     utils::trace("text_t");
 
-    std::size_t original_pos = get_pos();
     trim_whitespaces();
-
     std::size_t const begin = get_pos();
 
     // TODO
@@ -331,7 +329,7 @@ public:
     if (!parse_char('\"'))
       return {};
 
-    backtrack(original_pos);
+    backtrack(begin);
     return {};
   }
 
