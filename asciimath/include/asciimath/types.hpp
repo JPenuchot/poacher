@@ -36,7 +36,8 @@
 // - std::string_view are being used to represent tokens, it is therefore
 // assumed that AST elements won't outlive the parser
 
-namespace asciimath {
+/// AsciiMath AST types
+namespace asciimath::ast {
 
 // Forward declarations for recursion using cest::unique_ptr
 
@@ -58,37 +59,37 @@ struct fraction_t;
 struct simp_t;
 struct expr_t;
 
-/// identifier := [A-z]
+/// ```identifier := [A-z]```
 struct identifier_t {
   std::string_view id;
 };
 
-/// symbol := /* any string in the symbol table */
+/// ```symbol := /* any string in the symbol table */```
 struct symbol_t {
   std::string_view sym;
 }; // TODO: Symbol table
 
-/// number := '-'? [0-9]+ ( '.' [0-9]+ )?
+/// ```number := '-'? [0-9]+ ( '.' [0-9]+ )?```
 struct number_t {
   int val;
 };
 
-/// constant := number | symbol | identifier
+/// ```constant := number | symbol | identifier```
 struct constant_t {
   std::variant<identifier_t, symbol_t, number_t> value;
 };
 
-/// text := '"' [^"]* '"'
+/// ```text := '"' [^"]* '"'```
 struct text_t {
   std::string_view val;
 }; // TODO
 
-/// binary_op := 'frac' | 'root' | 'stackrel'
+/// ```binary_op := 'frac' | 'root' | 'stackrel'```
 struct binary_op_t {
   std::size_t index;
 };
 
-/// binary_expr := binary_op simp simp
+/// ```binary_expr := binary_op simp simp```
 struct binary_expr_t {
   binary_op_t op;
 
@@ -96,61 +97,64 @@ struct binary_expr_t {
   cest::unique_ptr<simp_t> simp_b_ptr;
 };
 
-/// unary_op := 'sqrt' | 'text'
+/// ```unary_op := 'sqrt' | 'text'```
 struct unary_op_t {
   std::size_t index;
 };
 
-/// unary_expr := unary_op simp
+/// ```unary_expr := unary_op simp```
 struct unary_expr_t {
   unary_op_t op;
   cest::unique_ptr<simp_t> simp_ptr;
 };
 
-/// rparen := ')' | ']' | '}' | ':)' | ':}'
+/// ```rparen := ')' | ']' | '}' | ':)' | ':}'```
 struct rparen_t {
   /// Index in symbols_by_kind<symbols::rightbracket_v>
   std::size_t index;
 };
 
-/// lparen := '(' | '[' | '{' | '(:' | '{:'
+/// ```lparen := '(' | '[' | '{' | '(:' | '{:'```
 struct lparen_t {
   /// Index in symbols_by_kind<symbols::leftbracket_v>
   std::size_t index;
 };
 
-/// paren_expr := lparen expr rparen
+/// ```paren_expr := lparen expr rparen```
 struct paren_expr_t {
   lparen_t lparen;
   cest::unique_ptr<expr_t> expr_ptr;
   rparen_t rparen;
 };
 
-/// sub :=  '_' simp super?
+/// ```sub :=  '_' simp super?```
 struct sub_t {
   cest::unique_ptr<simp_t> simp_ptr;
   std::optional<cest::unique_ptr<super_t>> super_ptr;
 };
 
-/// super := '^' simp
+/// ```super := '^' simp```
 struct super_t {
   cest::unique_ptr<simp_t> simp_ptr;
 };
 
-/// fraction := '/' simp
+/// ```fraction := '/' simp```
 struct fraction_t {
   cest::unique_ptr<simp_t> simp_ptr;
 };
 
-/// simp := constant | paren_expr | unary_expr | binary_expr | text
+/// ```simp := constant | paren_expr | unary_expr | binary_expr | text```
 struct simp_t {
   std::variant<constant_t, paren_expr_t, unary_expr_t, binary_expr_t, text_t>
       val;
 };
 
-/// expr := ( simp ( fraction | sub | super ) )+
+/// ```expr := ( simp ( fraction | sub | super ) )+```
 struct expr_t {
+
+  /// ```simp ( fraction | sub | super )```
   struct element_t {
+    /// ```( fraction | sub | super )```
     using variant_t = std::variant<fraction_t, sub_t, super_t>;
 
     simp_t simp;
@@ -160,4 +164,4 @@ struct expr_t {
   std::vector<element_t> content;
 };
 
-} // namespace asciimath
+} // namespace asciimath::ast
