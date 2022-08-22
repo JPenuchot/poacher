@@ -43,8 +43,8 @@ TMP_SORT_DEF_PREFIX<ast::expr_t> = "expr_t";
 
 /// Emits a trace in the console.
 constexpr void trace(std::string_view message = {},
-                         std::experimental::source_location sloc =
-                             std::experimental::source_location::current()) {
+                     std::experimental::source_location sloc =
+                         std::experimental::source_location::current()) {
   if (!std::is_constant_evaluated()) {
     if constexpr (debug) {
       if (message.empty()) {
