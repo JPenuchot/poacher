@@ -46,3 +46,14 @@ TEST_CASE("Char parsing", "[parser]") {
   REQUIRE(parser.get_pos() == 3);
   REQUIRE(parser.get_parse_view() == "d");
 }
+
+TEST_CASE("Formula parsing", "[parser]") {
+//   std::string_view formula("sum_(i=1)^n i^3=((n(n+1))/2)^2");
+  std::string_view formula("2");
+  asciimath::parser_t parser(formula);
+
+  asciimath::parser_t::parse_result_t<asciimath::ast::expr_t> result =
+      parser.parse_expr();
+
+  REQUIRE(result);
+}
