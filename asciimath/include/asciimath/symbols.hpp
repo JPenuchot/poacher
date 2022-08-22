@@ -1,3 +1,6 @@
+/// \file symbols.hpp
+/// Symbol table definition and helper functions/variables.
+
 #pragma once
 
 #include <asciimath/types.hpp>
@@ -14,6 +17,7 @@ namespace asciimath::symbols {
 // Symbol definitions taken from here:
 // https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js
 
+/// Symbol kind type
 enum symbol_kind_t {
   binary_v,
   const_v,
@@ -29,6 +33,7 @@ enum symbol_kind_t {
   underover_v,
 };
 
+/// Symbol definition
 struct symbol_def_t {
   /// AsciiMath representation
   std::string_view input;
@@ -47,7 +52,7 @@ struct symbol_def_t {
 
 static constexpr bool fixphi = false;
 
-/// AsciiMath symbol table
+/// Complete AsciiMath symbol table
 static constexpr symbol_def_t symbol_table[]{
     // some greek symbols
     {
@@ -1945,14 +1950,15 @@ static constexpr symbol_def_t symbol_table[]{
         //       codes : AMfrk
     }};
 
-/// Find a symbol in the symbol table
+/// Finds a symbol in the symbol table
 constexpr auto find_symbol_def(std::string_view const &sv) {
   return std::find_if(
       std::begin(symbol_table), std::end(symbol_table),
       [&sv](symbol_def_t const &def) -> bool { return sv == def.input; });
 }
 
-/// Filter symbols using a predicate
+/// Template variable to extract a list of symbol definitions that match a
+/// predicate, sorted by input string size.
 template <std::predicate<symbol_def_t> auto Pred>
 static constexpr auto symbols_by_pred = []() {
   // Generates a vector filtered using predicate Pred
@@ -1981,7 +1987,8 @@ static constexpr auto symbols_by_pred = []() {
   return res;
 }();
 
-/// Filter symbols using a predicate
+/// Template variable to extract a list of symbol definitions of a given kind,
+/// sorted by input string size.
 template <symbol_kind_t Kind>
 inline static constexpr auto symbols_by_kind =
     symbols_by_pred<[](symbol_def_t const &def) -> bool {
