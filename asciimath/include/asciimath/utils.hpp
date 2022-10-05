@@ -58,4 +58,111 @@ constexpr void trace(std::string_view message = {},
   }
 }
 
+/// Returns true if c is a digit, otherwise false.
+constexpr bool is_digit(char c) { return c >= '0' && c <= '9'; }
+
+/// Returns true if c is blank, otherwise false.
+constexpr bool is_blank(char c) { return c == '\n' || c == ' ' || c == '\n'; }
+
+/// Returns true if c is an alphanumeric character, otherwise false.
+constexpr bool is_alpha(char c) {
+  return is_digit(c) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+//==============================================================================
+// Print functions
+
+constexpr std::string print(ast::identifier_t const &identifier,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::symbol_t const &symbol, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::number_t const &number, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::constant_t const &constant,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::text_t const &text, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::binary_op_t const &binary_op,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::binary_expr_t const &binary_expr,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::unary_op_t const &unary_op,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::unary_expr_t const &unary_expr,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::rparen_t const &rparen, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::lparen_t const &lparen, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::paren_expr_t const &paren_expr,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::sub_t const &sub, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::super_t const &super, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::fraction_t const &fraction,
+                            std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::simp_t const &simp, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
+constexpr std::string print(ast::expr_t const &expr, std::size_t indent = 0,
+                            std::string_view indent_string = "  ") {
+  return {};
+}
+
 } // namespace asciimath::utils
