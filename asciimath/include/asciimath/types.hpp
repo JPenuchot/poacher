@@ -149,19 +149,18 @@ struct simp_t {
       val;
 };
 
+/// ```( simp ( fraction | sub | super ) )```
+struct expr_element_t {
+  /// ```( fraction | sub | super )```
+  using variant_t = std::variant<sub_t, fraction_t, super_t>;
+
+  cest::unique_ptr<simp_t> simp_ptr;
+  variant_t next;
+};
+
 /// ```expr := ( simp ( fraction | sub | super ) )+```
 struct expr_t {
-
-  /// ```simp ( fraction | sub | super )```
-  struct element_t {
-    /// ```( fraction | sub | super )```
-    using variant_t = std::variant<fraction_t, sub_t, super_t>;
-
-    simp_t simp;
-    variant_t next;
-  };
-
-  std::vector<element_t> content;
+  std::vector<expr_element_t> content;
 };
 
 } // namespace asciimath::ast
