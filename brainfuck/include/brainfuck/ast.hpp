@@ -1,8 +1,7 @@
 #pragma once
 
 #include <cest/memory.hpp>
-#include <cest/vector.hpp>
-#include <unistd.h>
+#include <vector>
 
 namespace brainfuck {
 
@@ -91,13 +90,13 @@ template <typename Child> struct make_visitable_t {
 // Helpers
 
 /// Token vector helper
-using token_vec_t = cest::vector<token_t>;
+using token_vec_t = std::vector<token_t>;
 
 /// AST node pointer helper type
 using ast_node_ptr_t = cest::unique_ptr<node_interface_t>;
 
 /// AST node vector helper type
-using ast_node_vec_t = cest::vector<ast_node_ptr_t>;
+using ast_node_vec_t = std::vector<ast_node_ptr_t>;
 
 // !Helpers
 
