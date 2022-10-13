@@ -12,8 +12,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <variant>
-
-#include <cest/vector.hpp>
+#include <vector>
 
 #include <brainfuck/ast.hpp>
 
@@ -42,7 +41,7 @@ struct flat_while_t {
 using flat_node_t =
     std::variant<flat_token_t, flat_block_descriptor_t, flat_while_t>;
 
-using flat_ast_t = cest::vector<flat_node_t>;
+using flat_ast_t = std::vector<flat_node_t>;
 
 template <size_t N> using fixed_flat_ast_t = std::array<flat_node_t, N>;
 
@@ -52,7 +51,7 @@ template <size_t N> using fixed_flat_ast_t = std::array<flat_node_t, N>;
 /// Support structure for generate_blocks function
 struct block_gen_status_t {
   /// Flat AST blocks, result of block_gen
-  cest::vector<flat_ast_t> blocks;
+  std::vector<flat_ast_t> blocks;
 
   /// Keeping track of which block is being generated
   size_t block_pos = 0;
@@ -113,10 +112,10 @@ constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
   block_gen_status_t bgs;
   block_gen(p, bgs);
 
-  cest::vector<flat_ast_t> const &semi_res = bgs.blocks;
+  std::vector<flat_ast_t> const &semi_res = bgs.blocks;
   res.reserve(bgs.total_size);
 
-  cest::vector<size_t> block_map;
+  std::vector<size_t> block_map;
   block_map.reserve(semi_res.size());
 
   // Step 1: flattening

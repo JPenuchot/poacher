@@ -4,7 +4,6 @@
 
 #include <cest/memory.hpp>
 #include <cest/string.hpp>
-#include <cest/vector.hpp>
 
 #include <brainfuck/ast.hpp>
 
