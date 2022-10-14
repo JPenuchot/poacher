@@ -3,7 +3,7 @@
 #include <cest/memory.hpp>
 #include <vector>
 
-namespace brainfuck {
+namespace brainfog {
 
 //------------------------------------------------------------------------------
 // TOKEN TYPE
@@ -192,4 +192,4 @@ template <typename F> constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
   }
 }
 
-} // namespace brainfuck
+} // namespace brainfog

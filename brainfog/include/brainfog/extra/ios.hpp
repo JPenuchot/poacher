@@ -1,10 +1,10 @@
 #pragma once
 
-#include <brainfuck/ast.hpp>
+#include <brainfog/ast.hpp>
 #include <cest/iostream.hpp>
 #include <cest/string.hpp>
 
-namespace brainfuck::extra {
+namespace brainfog::extra {
 
 inline std::ostream &operator<<(std::ostream &, ast_node_ptr_t const &);
 
@@ -62,4 +62,4 @@ inline std::ostream &operator<<(std::ostream &o, ast_node_ptr_t const &p) {
   return o;
 }
 
-} // namespace brainfuck::extra
+} // namespace brainfog::extra

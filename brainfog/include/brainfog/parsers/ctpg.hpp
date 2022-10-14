@@ -1,12 +1,12 @@
 #pragma once
 
-#include "brainfuck/ast.hpp"
+#include "brainfog/ast.hpp"
 
 #include <cest/memory.hpp>
 #include <ctpg/buffers.hpp>
 #include <ctpg/ctpg.hpp>
 
-namespace brainfuck::ctpg_parser {
+namespace brainfog::ctpg_parser {
 
 constexpr ast_node_ptr_t parse_ast(char const *program_string) {
   // Non-terminal symbols
@@ -97,4 +97,4 @@ constexpr ast_node_ptr_t parse_ast(char const *program_string) {
   return cest::make_unique<ast_block_t>(ast_node_vec_t{});
 }
 
-} // namespace brainfuck::ctpg_parser
+} // namespace brainfog::ctpg_parser

@@ -5,9 +5,9 @@
 #include <cest/memory.hpp>
 #include <cest/string.hpp>
 
-#include <brainfuck/ast.hpp>
+#include <brainfog/ast.hpp>
 
-namespace brainfuck::naive_parser {
+namespace brainfog::naive_parser {
 
 namespace detail {
 //------------------------------------------------------------------------------
@@ -70,4 +70,4 @@ constexpr ast_node_ptr_t parse_ast(cest::string const &input) {
       detail::parse_block(tok.cbegin(), tok.cend()));
 }
 
-} // namespace brainfuck::naive_parser
+} // namespace brainfog::naive_parser

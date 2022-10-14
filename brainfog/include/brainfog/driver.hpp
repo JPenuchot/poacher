@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "brainfuck/ir/expression_template.hpp"
-#include "brainfuck/ir/flat.hpp"
-#include "brainfuck/parsers/naive.hpp"
-#include "brainfuck/program.hpp"
+#include "brainfog/ir/expression_template.hpp"
+#include "brainfog/ir/flat.hpp"
+#include "brainfog/parsers/naive.hpp"
+#include "brainfog/program.hpp"
 
-namespace brainfuck {
+namespace brainfog {
 
 enum backend_t {
   expression_template_v,
@@ -15,7 +15,7 @@ enum backend_t {
 };
 
 template <auto const &ProgramString> constexpr auto to_flat_ast() {
-  namespace bf = brainfuck;
+  namespace bf = brainfog;
   namespace bflat = bf::flat;
 
   // Calculating size
@@ -53,4 +53,4 @@ void run_program(program_state_t &s) {
   }
 }
 
-} // namespace brainfuck
+} // namespace brainfog

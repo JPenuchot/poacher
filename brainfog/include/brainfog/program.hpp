@@ -1,11 +1,14 @@
 #pragma once
 
 #include <array>
-#include <iostream>
 
-#include <brainfuck/ast.hpp>
+#include <cest/iostream.hpp>
+#include <cest/istream.hpp>
+#include <cest/ostream.hpp>
 
-namespace brainfuck {
+#include <brainfog/ast.hpp>
+
+namespace brainfog {
 
 struct program_state_t {
   constexpr program_state_t() noexcept : i(0) {
@@ -18,4 +21,4 @@ struct program_state_t {
   std::size_t i;
 };
 
-} // namespace brainfuck
+} // namespace brainfog

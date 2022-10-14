@@ -1,13 +1,13 @@
 #pragma once
 
-namespace brainfuck::example_programs {
+namespace brainfog::example_programs {
 
 static constexpr const char *hello_world =
     "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<"
     "-.<.+++.------.--------.>>+.>++.";
 
 static constexpr const char *mandelbrot =
-    "A mandelbrot set fractal viewer in brainfuck written by Erik Bosman"
+    "A mandelbrot set fractal viewer in brainfog written by Erik Bosman"
     "+++++++++++++[->++>>>+++++>++>+<<<<<<]>>>>>++++++>--->>>>>>>>>>+++++++++++"
     "++++[[>>>>>>>>>]+[<<<<<<<<<]>>>>>>>>>-]+[>>>>>>>>[-]>]<<<<<<<<<[<<<<<<<<<]"
     ">>>>>>>>[-]+<<<<<<<+++++[-[->>>>>>>>>+<<<<<<<<<]>>>>>>>>>]>>>>>>>+>>>>>>>>"
@@ -164,4 +164,4 @@ static constexpr const char *mandelbrot =
     ">>>]<<<<<<<<<[<<<<<<<<<]>>>>[-]<<<+++++[-[->>>>>>>>>+<<<<<<<<<]>>>>>>>>>]>"
     ">>>>->>>>>>>>>>>>>>>>>>>>>>>>>>>-<<<<<<[<<<<<<<<<]]>>>]";
 
-} // namespace brainfuck::example_programs
+} // namespace brainfog::example_programs

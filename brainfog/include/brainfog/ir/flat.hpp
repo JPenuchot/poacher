@@ -5,7 +5,7 @@
 // The transformation is more of a proof of concept since
 // this form is *very* close to its original one.
 
-#include "brainfuck/program.hpp"
+#include "brainfog/program.hpp"
 
 #include <algorithm>
 #include <array>
@@ -14,9 +14,9 @@
 #include <variant>
 #include <vector>
 
-#include <brainfuck/ast.hpp>
+#include <brainfog/ast.hpp>
 
-namespace brainfuck::flat {
+namespace brainfog::flat {
 
 using std::size_t;
 
@@ -183,4 +183,4 @@ void run(program_state_t &s) {
   }
 }
 
-} // namespace brainfuck::flat
+} // namespace brainfog::flat
