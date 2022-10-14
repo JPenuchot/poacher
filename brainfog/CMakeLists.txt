@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23)
-project(brainfuck)
+project(brainfog)
 
 find_package(ctpg REQUIRED)
 
@@ -14,13 +14,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647)
 
 # Build
-add_executable(brainfuck ${SOURCES})
+add_executable(brainfog ${SOURCES})
 
-target_include_directories(brainfuck PUBLIC "include/")
-target_link_libraries(brainfuck PUBLIC ctpg::ctpg)
+target_include_directories(brainfog PUBLIC "include/")
+target_link_libraries(brainfog PUBLIC ctpg::ctpg)
 
 # Format
-add_custom_target(format-brainfuck COMMAND "clang-format" "-i" ${SOURCES}
+add_custom_target(format-brainfog COMMAND "clang-format" "-i" ${SOURCES}
                                            ${HEADERS})
 
 # Benchmarks
