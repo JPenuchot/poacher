@@ -1,11 +1,11 @@
 #pragma once
 
-#include <brainfuck/ir/flat.hpp>
-#include <brainfuck/parsers/naive.hpp>
+#include <brainfog/ir/flat.hpp>
+#include <brainfog/parsers/naive.hpp>
 
 /// Parse program to flat AST
 template <auto const &ProgramString> constexpr auto to_flat_ast() {
-  namespace bf = brainfuck;
+  namespace bf = brainfog;
   namespace bflat = bf::flat;
 
   // Calculating size
@@ -24,7 +24,7 @@ template <auto const &ProgramString> constexpr auto to_flat_ast() {
 
 /// Parse and run program using the flat AST backend
 template <auto const &ProgramString> void run_program() {
-  namespace bf = brainfuck;
+  namespace bf = brainfog;
   namespace bflat = bf::flat;
 
   static constexpr auto FlatAst = to_flat_ast<ProgramString>();
