@@ -1,6 +1,6 @@
-# Brainfuck
+# Brainfog
 
-This is a Brainfuck compiler. In a compiler.
+This is a Brainfog compiler. In a compiler.
 
 It currently has two backends:
 - An expression-template based backend as a baseline,
