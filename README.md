@@ -11,7 +11,7 @@ works in constexpr functions, but this need is almost fulfilled by
 [ctpg](https://github.com/peter-winter/ctpg). Several issues remain and make the
 ctpg incompatible with constexpr functions, but I'm also working on fixing that.
 
-Yet I'm still working on handmade parsers (such as the Brainfuck parser that is
+Yet I'm still working on handmade parsers (such as the Brainfog parser that is
 fully functional), data structures for ASTs, ways to go from value-based data
 to type-based data, etc.
 
