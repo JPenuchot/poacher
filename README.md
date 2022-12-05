@@ -40,6 +40,8 @@ Happy.
 
 ## References
 
+- [A totally constexpr standard library - Paul Keir, Joel Falcou et al - Meeting C++ 2022](
+  https://www.youtube.com/watch?v=ekFPm7e__vI)
 - [Constexpr All The Things](
 https://github.com/lefticus/constexpr_all_the_things)
 - [Jean Privat's courses on compiling & LR(1) parsing](
