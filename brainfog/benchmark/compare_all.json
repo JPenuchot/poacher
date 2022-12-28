@@ -4,15 +4,12 @@
   "x_label": "Benchmark size factor",
   "y_label": "Time (µs)",
   "draw_average": true,
-  "draw_points": true,
+  "demangle": false,
+  "draw_points": false,
   "width": 800,
   "height": 400,
-  "key_ptrs": [
-    "/name",
-    "/args/detail"
-  ],
+  "key_ptrs": ["/name", "/args/detail"],
+  "_key_ptrs":  ["/name"],
   "value_ptr": "/dur",
-  "plot_file_extensions": [
-    ".svg"
-  ]
+  "plot_file_extensions": [".svg"]
 }
