@@ -2,7 +2,7 @@
   "version" : 4,
   "cmakeMinimumRequired" : {
     "major" : 3,
-    "minor" : 23,
+    "minor" : 25,
     "patch" : 0
   },
   "configurePresets" : [
@@ -13,13 +13,13 @@
       "generator" : "Ninja",
       "binaryDir" : "${sourceDir}/build",
       "cacheVariables" : {
+        "CMAKE_CXX_COMPILER" : "clang++",
+        "CMAKE_C_COMPILER" : "clang",
         "CMAKE_EXPORT_COMPILE_COMMANDS" : {
           "type" : "BOOL",
           "value" : "ON"
         },
-        "CMAKE_CXX_COMPILER" : "clang++",
-        "CMAKE_C_COMPILER" : "clang",
-        "CMAKE_BUILD_TYPE" : "Release"
+        "CMAKE_BUILD_TYPE" : "RelWithDebInfo"
       }
     },
     {
@@ -29,13 +29,10 @@
       "generator" : "Ninja",
       "binaryDir" : "${sourceDir}/build/release",
       "cacheVariables" : {
-        "CMAKE_EXPORT_COMPILE_COMMANDS" : {
-          "type" : "BOOL",
-          "value" : "ON"
-        },
         "CMAKE_CXX_COMPILER" : "clang++",
         "CMAKE_C_COMPILER" : "clang",
-        "CMAKE_BUILD_TYPE" : "Release"
+        "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
+        "CMAKE_BUILD_TYPE" : "RelWithDebInfo"
       }
     },
     {
@@ -55,6 +52,7 @@
       "description" : "Benchmark",
       "binaryDir" : "${sourceDir}/build/bench",
       "cacheVariables" : {
+        "CMAKE_BUILD_TYPE" : "RelWithDebInfo",
         "COMPILE_BENCHMARKS" : {
           "type" : "BOOL",
           "value" : "ON"
