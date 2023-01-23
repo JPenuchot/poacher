@@ -5,25 +5,101 @@
 
 // https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
+/// Token kind for grammar spec
+enum token_kind_t {
+  variable_v,
+  function_v,
+  operator_v,
+  lparen_v,
+  rparen_v,
+};
+
+struct variable_spec_t;
+struct function_spec_t;
+struct operator_spec_t;
+struct lparen_spec_t;
+struct rparen_spec_t;
+
+/// Common type for token specifications.
 struct token_spec_t {
-  constexpr virtual std::string_view get_token() const = 0;
+  token_kind_t kind;
+  std::string_view identifier;
+  constexpr token_spec_t(token_kind_t _kind, std::string_view identifier_)
+      : kind(_kind), identifier(identifier_) {}
+
+  constexpr std::string_view get_identifier() const { return identifier; }
+  constexpr token_kind_t get_kind() const { return kind; }
+
+  /// Calls visitor with current token casted to its underlaying type.
+  template <typename Visitor> constexpr auto visit(Visitor visitor) {
+    switch (kind) {
+    case variable_v:
+      return visitor(*(variable_spec_t *)(this));
+    case function_v:
+      return visitor(*(function_spec_t *)(this));
+    case operator_v:
+      return visitor(*(operator_spec_t *)(this));
+    case lparen_v:
+      return visitor(*(lparen_spec_t *)(this));
+    case rparen_v:
+      return visitor(*(rparen_spec_t *)(this));
+    }
+  }
+
+  /// Calls visitor with current token casted to its underlaying const type.
+  template <typename Visitor> constexpr auto visit(Visitor visitor) const {
+    switch (kind) {
+    case variable_v:
+      return visitor(*(variable_spec_t const *)(this));
+    case function_v:
+      return visitor(*(function_spec_t const *)(this));
+    case operator_v:
+      return visitor(*(operator_spec_t const *)(this));
+    case lparen_v:
+      return visitor(*(lparen_spec_t const *)(this));
+    case rparen_v:
+      return visitor(*(rparen_spec_t const *)(this));
+    }
+  }
 };
 
+/// Variable spec type
+struct variable_spec_t : token_spec_t {
+  constexpr variable_spec_t(std::string_view identifier)
+      : token_spec_t(variable_v, identifier) {}
+};
+
+/// Function spec type
 struct function_spec_t : token_spec_t {
-  std::string_view identifier;
+  constexpr function_spec_t(std::string_view identifier)
+      : token_spec_t(function_v, identifier) {}
 };
 
+/// Operator spec type
 struct operator_spec_t : token_spec_t {
-  std::string_view identifier;
+  constexpr operator_spec_t(std::string_view identifier)
+      : token_spec_t(operator_v, identifier) {}
 };
 
-struct grammar_spec_t : token_spec_t {
-  std::vector<std::string_view> variables;
+/// Left parenthesis spec type
+struct lparen_spec_t : token_spec_t {
+  constexpr lparen_spec_t(std::string_view identifier)
+      : token_spec_t(lparen_v, identifier) {}
+};
+
+struct rparen_spec_t : token_spec_t {
+  constexpr rparen_spec_t(std::string_view identifier)
+      : token_spec_t(rparen_v, identifier) {}
+};
+
+/// Grammar specification that defines a formula to recognizable with the
+/// shunting-yard algorithm.
+struct grammar_spec_t {
+  std::vector<variable_spec_t> variables;
   std::vector<function_spec_t> functions;
   std::vector<operator_spec_t> operators;
-
-  int left_paren;
-  int right_paren;
+  std::vector<lparen_spec_t> lparens;
+  std::vector<rparen_spec_t> rparens;
 };
 
 std::vector<cest::unique_ptr<token_spec_t>> constexpr parse_formula(
@@ -82,7 +158,8 @@ std::vector<cest::unique_ptr<token_spec_t>> constexpr parse_formula(
       }
     }
   }
-  /* After the while loop, pop the remaining items from the operator stack into the output queue. */
+  /* After the while loop, pop the remaining items from the operator stack into
+   * the output queue. */
   while (false /* there are tokens on the operator stack */) {
     /* If the operator token on the top of the stack is a parenthesis, then
      * there are mismatched parentheses. */
