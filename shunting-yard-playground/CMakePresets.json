@@ -1,0 +1,103 @@
+{
+  "version" : 4,
+  "cmakeMinimumRequired" : {
+    "major" : 3,
+    "minor" : 23,
+    "patch" : 0
+  },
+  "configurePresets" : [
+    {
+      "name" : "clangd",
+      "displayName" : "Clangd build",
+      "description" : "Provides a compile_commands.json file",
+      "generator" : "Ninja",
+      "binaryDir" : "${sourceDir}/build",
+      "cacheVariables" : {
+        "CMAKE_EXPORT_COMPILE_COMMANDS" : {
+          "type" : "BOOL",
+          "value" : "ON"
+        },
+        "CMAKE_CXX_COMPILER" : "clang++",
+        "CMAKE_C_COMPILER" : "clang",
+        "CMAKE_BUILD_TYPE" : "Debug",
+        "BUILD_TESTING" : "ON"
+      }
+    },
+    {
+      "name" : "release",
+      "displayName" : "Release no bench",
+      "description" : "Release with no benchmark",
+      "generator" : "Ninja",
+      "binaryDir" : "${sourceDir}/build/release",
+      "cacheVariables" : {
+        "CMAKE_EXPORT_COMPILE_COMMANDS" : {
+          "type" : "BOOL",
+          "value" : "ON"
+        },
+        "CMAKE_CXX_COMPILER" : "clang++",
+        "CMAKE_C_COMPILER" : "clang",
+        "CMAKE_BUILD_TYPE" : "Release"
+      }
+    },
+    {
+      "name" : "debug",
+      "inherits" : "release",
+      "displayName" : "Debug no bench",
+      "description" : "Debug with no benchmark",
+      "binaryDir" : "${sourceDir}/build/debug",
+      "cacheVariables" : {
+        "CMAKE_BUILD_TYPE" : "Debug"
+      }
+    },
+    {
+      "name" : "bench",
+      "inherits" : "release",
+      "displayName" : "Benchmark",
+      "description" : "Benchmark",
+      "binaryDir" : "${sourceDir}/build/bench",
+      "cacheVariables" : {
+        "COMPILE_BENCHMARKS" : {
+          "type" : "BOOL",
+          "value" : "ON"
+        }
+      }
+    },
+    {
+      "name" : "bench-debug",
+      "inherits" : "bench",
+      "displayName" : "Benchmark debug",
+      "description" : "Debug build using Ninja generator",
+      "binaryDir" : "${sourceDir}/build/bench-debug",
+      "cacheVariables" : {
+        "CMAKE_BUILD_TYPE" : "Debug"
+      }
+    }
+  ],
+  "buildPresets" : [
+    {
+      "name" : "release",
+      "configurePreset" : "release"
+    },
+    {
+      "name" : "debug",
+      "inherits" : "release",
+      "configurePreset" : "debug"
+    },
+    {
+      "name" : "bench",
+      "inherits" : "release",
+      "configurePreset" : "bench",
+      "targets" : [
+        "ctbench-graph-all"
+      ],
+      "nativeToolOptions" : [
+        "-j1"
+      ]
+    },
+    {
+      "name" : "bench-debug",
+      "inherits" : "bench",
+      "configurePreset" : "bench-debug"
+    }
+  ]
+}
