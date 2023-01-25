@@ -300,10 +300,10 @@ shunting_yard_result_t constexpr parse_formula(std::string_view formula,
                        return true;
                      }
                    } else if constexpr (std::is_same_v<O2Type, function_t>) {
-                     // NOTE: Assuming functions have greater precedence
+                     // Functions have greater precedence
                      return true;
                    }
-                   // left parenthesis or lower precedence
+                   // left parenthesis or lower precedence operator
                    return false;
                  })) {
         // pop o2 from the operator stack into the output queue
