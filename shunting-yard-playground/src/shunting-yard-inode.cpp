@@ -10,6 +10,7 @@
 
 #include <cest/memory.hpp>
 
+// Implementation based on:
 // https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
 // Forward declarations to keep C++ happy :)
@@ -40,49 +41,17 @@ struct token_t {
   token_kind_t kind;
   std::string_view text;
 
+  constexpr virtual ~token_t() = default;
+
   constexpr token_t(token_kind_t kind_, std::string_view text_)
       : kind(kind_), text(text_) {}
 
   /// Calls visitor with current token casted to its underlaying type.
-  template <typename VisitorType> constexpr auto visit(VisitorType visitor) {
-    switch (kind) {
-    case failure_v:
-      return visitor(*(failure_t *)(this));
-    case variable_v:
-      return visitor(*(variable_t *)(this));
-    case function_v:
-      return visitor(*(function_t *)(this));
-    case operator_v:
-      return visitor(*(operator_t *)(this));
-    case lparen_v:
-      return visitor(*(lparen_t *)(this));
-    case rparen_v:
-      return visitor(*(rparen_t *)(this));
-    case constant_v:
-      return visitor(*(constant_t *)(this));
-    }
-  }
+  template <typename VisitorType> constexpr auto visit(VisitorType visitor);
 
   /// Calls visitor with current token casted to its underlaying const type.
   template <typename VisitorType>
-  constexpr auto visit(VisitorType visitor) const {
-    switch (kind) {
-    case failure_v:
-      return visitor(*(failure_t const *)(this));
-    case variable_v:
-      return visitor(*(variable_t const *)(this));
-    case function_v:
-      return visitor(*(function_t const *)(this));
-    case operator_v:
-      return visitor(*(operator_t const *)(this));
-    case lparen_v:
-      return visitor(*(lparen_t const *)(this));
-    case rparen_v:
-      return visitor(*(rparen_t const *)(this));
-    case constant_v:
-      return visitor(*(constant_t const *)(this));
-    }
-  }
+  constexpr auto visit(VisitorType visitor) const;
 
   /// Returns true if a valid result is held by the object.
   constexpr operator bool() const { return kind != failure_v; }
@@ -136,8 +105,50 @@ struct rparen_t : token_t {
 struct constant_t : token_t {
   unsigned value;
   constexpr constant_t(unsigned value_)
-      : token_t(constant_v, std::to_string(value_)), value(value_) {}
+      : token_t(constant_v, ""), value(value_) {}
 };
+
+/// Calls visitor with current token casted to its underlaying type.
+template <typename VisitorType>
+constexpr auto token_t::visit(VisitorType visitor) {
+  switch (kind) {
+  case failure_v:
+    return visitor(static_cast<failure_t &>(*this));
+  case variable_v:
+    return visitor(static_cast<variable_t &>(*this));
+  case function_v:
+    return visitor(static_cast<function_t &>(*this));
+  case operator_v:
+    return visitor(static_cast<operator_t &>(*this));
+  case lparen_v:
+    return visitor(static_cast<lparen_t &>(*this));
+  case rparen_v:
+    return visitor(static_cast<rparen_t &>(*this));
+  case constant_v:
+    return visitor(static_cast<constant_t &>(*this));
+  }
+}
+
+/// Calls visitor with current token casted to its underlaying const type.
+template <typename VisitorType>
+constexpr auto token_t::visit(VisitorType visitor) const {
+  switch (kind) {
+  case failure_v:
+    return visitor(static_cast<failure_t const &>(*this));
+  case variable_v:
+    return visitor(static_cast<variable_t const &>(*this));
+  case function_v:
+    return visitor(static_cast<function_t const &>(*this));
+  case operator_v:
+    return visitor(static_cast<operator_t const &>(*this));
+  case lparen_v:
+    return visitor(static_cast<lparen_t const &>(*this));
+  case rparen_v:
+    return visitor(static_cast<rparen_t const &>(*this));
+  case constant_v:
+    return visitor(static_cast<constant_t const &>(*this));
+  }
+}
 
 /// Tries to parse a token from the given token list and returns the iterator to
 /// it. If found, it will be removed from the beginning of formula. If not,
@@ -169,7 +180,6 @@ constexpr bool is_digit(char c) { return '0' <= c && c <= '9'; }
 constexpr cest::unique_ptr<token_t> parse_number(std::string_view &text) {
   // Checking for presence of a digit
   if (text.empty() || !is_digit(text.front())) {
-    fmt::print("parse_number failure\n");
     return cest::make_unique<failure_t>();
   }
 
@@ -181,12 +191,9 @@ constexpr cest::unique_ptr<token_t> parse_number(std::string_view &text) {
 
     // Update text
 
-    fmt::print("before: {}\n", text);
     text.remove_prefix(1);
-    fmt::print("after: {}\n", text);
   }
 
-  fmt::print("parse_number success: {}\n", result);
   return cest::make_unique<constant_t>(result);
 }
 
@@ -361,8 +368,7 @@ shunting_yard_result_t constexpr parse_formula(std::string_view formula,
   return result;
 }
 
-int main() {
-  fmt::print("Building grammar.\n");
+constexpr bool foo() {
   grammar_spec_t rubbish_algebra{.variables = {},
                                  .functions = {},
                                  .operators =
@@ -376,6 +382,9 @@ int main() {
                                  .lparens = {lparen_t("(")},
                                  .rparens = {rparen_t(")")}};
 
-  fmt::print("Calling parse_formula.\n");
   shunting_yard_result_t val = parse_formula("1 + 1 / 2", rubbish_algebra);
+
+  return true;
 }
+
+int main() { constexpr bool val = foo(); }
