@@ -1,8 +1,12 @@
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <ranges>
 #include <string_view>
+#include <type_traits>
 #include <vector>
+
+#include <fmt/core.h>
 
 #include <cest/memory.hpp>
 
@@ -33,16 +37,11 @@ enum token_kind_t {
 /// kind. More specific data can be attached for children, such as precedence
 /// for operators or arity for functions.
 struct token_t {
-private:
   token_kind_t kind;
   std::string_view text;
 
-public:
   constexpr token_t(token_kind_t kind_, std::string_view text_)
       : kind(kind_), text(text_) {}
-
-  constexpr std::string_view get_text() const { return text; }
-  constexpr token_kind_t get_kind() const { return kind; }
 
   /// Calls visitor with current token casted to its underlaying type.
   template <typename VisitorType> constexpr auto visit(VisitorType visitor) {
@@ -97,31 +96,40 @@ struct failure_t : token_t {
 /// Variable spec type
 struct variable_t : token_t {
   constexpr variable_t(std::string_view identifier)
-      : token_t(token_kind_t::variable_v, identifier) {}
+      : token_t(variable_v, identifier) {}
 };
 
 /// Function spec type
 struct function_t : token_t {
   constexpr function_t(std::string_view identifier)
-      : token_t(token_kind_t::function_v, identifier) {}
+      : token_t(function_v, identifier) {}
 };
+
+/// Operator associativity
+enum operator_associativity_t { left_v, right_v };
 
 /// Operator spec type
 struct operator_t : token_t {
-  constexpr operator_t(std::string_view identifier)
-      : token_t(token_kind_t::operator_v, identifier) {}
+  operator_associativity_t associativity;
+  unsigned precedence;
+
+  constexpr operator_t(std::string_view identifier,
+                       operator_associativity_t associativity_,
+                       unsigned precedence_)
+      : token_t(operator_v, identifier), associativity(associativity_),
+        precedence(precedence_) {}
 };
 
 /// Left parenthesis spec type
 struct lparen_t : token_t {
   constexpr lparen_t(std::string_view identifier)
-      : token_t(token_kind_t::lparen_v, identifier) {}
+      : token_t(lparen_v, identifier) {}
 };
 
 /// Right parenthesis spec type
 struct rparen_t : token_t {
   constexpr rparen_t(std::string_view identifier)
-      : token_t(token_kind_t::rparen_v, identifier) {}
+      : token_t(rparen_v, identifier) {}
 };
 
 /// Constant (unsigned integer)
@@ -129,16 +137,6 @@ struct constant_t : token_t {
   unsigned value;
   constexpr constant_t(unsigned value_)
       : token_t(constant_v, std::to_string(value_)), value(value_) {}
-};
-
-/// Grammar specification that defines a formula to recognizable with the
-/// shunting-yard algorithm.
-struct grammar_spec_t {
-  std::vector<variable_t> variables;
-  std::vector<function_t> functions;
-  std::vector<operator_t> operators;
-  std::vector<lparen_t> lparens;
-  std::vector<rparen_t> rparens;
 };
 
 /// Tries to parse a token from the given token list and returns the iterator to
@@ -153,43 +151,62 @@ parse_token_from_spec_list(std::string_view &formula,
   // Try to find the token from the list
   std::ranges::iterator_t<RangeType const> token_iterator =
       std::ranges::find_if(token_list, [&](token_t const &token) {
-        return formula.starts_with(token.get_text());
+        return formula.starts_with(token.text);
       });
 
   // If found, remove it from the beginning
   if (token_iterator != std::ranges::end(token_list)) {
-    formula.remove_prefix(token_iterator->get_text().size());
+    formula.remove_prefix(token_iterator->text.size());
   }
 
   return token_iterator;
 }
 
+constexpr bool is_digit(char c) { return '0' <= c && c <= '9'; }
+
 /// Parses a number.
 /// If number parsing fails, the result will be a failure_t object.
-constexpr cest::unique_ptr<token_t> parse_number(std::string_view &formula) {
-  // Finding the end of the digit list
-  std::size_t number_end = formula.find_last_not_of("0123456789");
-
-  if (number_end == 0) {
+constexpr cest::unique_ptr<token_t> parse_number(std::string_view &text) {
+  // Checking for presence of a digit
+  if (text.empty() || !is_digit(text.front())) {
+    fmt::print("parse_number failure\n");
     return cest::make_unique<failure_t>();
   }
 
   // Accumulate digits
   unsigned result = 0;
-  for (std::size_t digit_rank = 0; digit_rank < number_end; digit_rank++) {
-    result = (result * 10) + formula[digit_rank];
+  while (!text.empty() && is_digit(text.front())) {
+    result *= 10;
+    result += text.front() - '0';
+
+    // Update text
+
+    fmt::print("before: {}\n", text);
+    text.remove_prefix(1);
+    fmt::print("after: {}\n", text);
   }
 
-  // Update formula
-  formula.remove_prefix(number_end);
-
+  fmt::print("parse_number success: {}\n", result);
   return cest::make_unique<constant_t>(result);
 }
 
 /// Trims whitespaces from the formula.
 constexpr void trim_whitespaces(std::string_view &formula) {
-  formula.remove_prefix(formula.find_last_not_of(" \t\n"));
+  if (std::size_t n = formula.find_last_not_of(" \t\n");
+      n != std::string_view::npos) {
+    formula.remove_prefix(n);
+  }
 }
+
+/// Grammar specification that defines a formula to recognizable with the
+/// shunting-yard algorithm.
+struct grammar_spec_t {
+  std::vector<variable_t> variables;
+  std::vector<function_t> functions;
+  std::vector<operator_t> operators;
+  std::vector<lparen_t> lparens;
+  std::vector<rparen_t> rparens;
+};
 
 /// Represents the parsing result of parse_formula. Constants holds the
 /// constant objects that may be generated by parse_formula.
@@ -200,8 +217,8 @@ struct shunting_yard_result_t {
 
 /// Parses a formula. The result is a vector of pointers to token_spec_t
 /// elements contained in the various vectors of spec.
-std::vector<token_t const *> constexpr parse_formula(
-    std::string_view formula, grammar_spec_t const &spec) {
+shunting_yard_result_t constexpr parse_formula(std::string_view formula,
+                                               grammar_spec_t const &spec) {
   // The functions referred to in this algorithm are simple single argument
   // functions such as sine, inverse or factorial.
 
@@ -213,18 +230,25 @@ std::vector<token_t const *> constexpr parse_formula(
 
   // There are tokens to be read
   while (trim_whitespaces(formula), !formula.empty()) {
+    std::size_t formula_size = formula.size();
+
+    if (!std::is_constant_evaluated()) {
+      fmt::print(stderr, "Formula: \"{}\"\n", formula);
+    }
     // read a token
 
     // Token is a number constant
     if (parse_number(formula)->visit(
             [&]<typename TokenType>(TokenType const &parsed_item) {
               if constexpr (std::is_same_v<constant_t, TokenType>) {
-                // If a constant was parsed
+                // The constant must be stored first
                 result.constants.push_back(parsed_item);
                 return true;
               }
               return false;
             })) {
+      // Put it into the output queue
+      result.output_queue.push_back(std::addressof(result.constants.back()));
     }
 
     // Token is a function
@@ -241,20 +265,31 @@ std::vector<token_t const *> constexpr parse_formula(
              o1_spec_iterator != spec.operators.end()) {
       operator_t const &o1 = *o1_spec_iterator;
 
-      while (
-          // there is an operator o2 at the top of the operator stack which is
-          // not a left parenthesis,
-          !operator_stack.empty() &&
-          operator_stack.back()->get_kind() != token_kind_t::lparen_v
-
-      ) {
-        // TODO
-        // and (o2 has greater precedence than o1 or
-        // (o1 and o2 have the same precedence and o1 is left-associative))
-        // NOTE: What if o2 is a function? Can it be a function at all?
-        if (false) {
-          // TODO
+      // there is an operator o2 at the top of the operator stack
+      // which is not a left parenthesis,
+      while (!operator_stack.empty() &&
+             operator_stack.back()->kind != lparen_v) {
+        if (operator_stack.back()->visit(
+                [&]<typename O2Type>(O2Type const &o2_as_auto) -> bool {
+                  if constexpr (std::is_same_v<O2Type, operator_t>) {
+                    operator_t const &o2_as_operator = o2_as_auto;
+                    // and (o2 has greater precedence than o1 or
+                    // (o1 and o2 have the same precedence and o1 is
+                    // left-associative))
+                    if (o2_as_operator.precedence > o1.precedence ||
+                        (o1.precedence == o2_as_operator.precedence &&
+                         o1.associativity == left_v)) {
+                      return true;
+                    }
+                  } else if constexpr (std::is_same_v<O2Type, function_t>) {
+                    // NOTE: We assume functions have greater precedence
+                    return true;
+                  }
+                  return false;
+                })) {
           // pop o2 from the operator stack into the output queue
+          result.output_queue.push_back(operator_stack.back());
+          operator_stack.pop_back();
         }
       }
       // push o1 onto the operator stack
@@ -273,45 +308,74 @@ std::vector<token_t const *> constexpr parse_formula(
     else if (auto rparen_token_iterator =
                  parse_token_from_spec_list(formula, spec.rparens);
              rparen_token_iterator != spec.rparens.end()) {
-      while (false
-             // TODO
-             // the operator at the top of the operator stack is not a left
-             // parenthesis
+      // the operator at the top of the operator stack is not a left parenthesis
+      while (operator_stack.empty() ||
+             operator_stack.back()->kind != lparen_v) {
 
-      ) {
-        // TODO
         // {assert the operator stack is not empty}
-        /*  If the stack runs out without finding a left parenthesis,
-            then there are mismatched parentheses. */
-        // TODO
+        if (operator_stack.empty()) {
+          // If the stack runs out without finding a left parenthesis, then
+          // there are mismatched parentheses.
+          throw;
+        }
         // pop the operator from the operator stack into the output queue
+        result.output_queue.push_back(operator_stack.back());
+        operator_stack.pop_back();
       }
-      // TODO
+
       // {assert there is a left parenthesis at the top of the operator stack}
+      if (operator_stack.empty() || operator_stack.back()->kind != lparen_v) {
+        throw;
+      }
 
-      // TODO
       // pop the left parenthesis from the operator stack and discard it
+      operator_stack.pop_back();
 
-      if(false/* there is a function token at the top of the operator stack
-        TODO */)
-      {
-        // pop the function from the operator stack into the output queue TODO
+      // there is a function token at the top of the operator stack
+      if (!operator_stack.empty() &&
+          operator_stack.back()->kind == function_v) {
+        // pop the function from the operator stack into the output queue
+        result.output_queue.push_back(operator_stack.back());
+        operator_stack.pop_back();
       }
     }
   }
   /* After the while loop, pop the remaining items from the operator stack into
    * the output queue. */
-  while (false /* there are tokens on the operator stack */) {
-    /* If the operator token on the top of the stack is a parenthesis, then
-     * there are mismatched parentheses. TODO */
+
+  // there are tokens on the operator stack
+  while (!operator_stack.empty()) {
+    // If the operator token on the top of the stack is a parenthesis, then
+    // there are mismatched parentheses.
 
     // {assert the operator on top of the stack is not a (left) parenthesis}
-    // TODO
+    if (operator_stack.back()->kind == lparen_v) {
+      throw;
+    }
 
-    // pop the operator from the operator stack onto the output queue TODO
+    // pop the operator from the operator stack onto the output queue
+    result.output_queue.push_back(operator_stack.back());
+    operator_stack.pop_back();
   }
 
-  return {};
+  return result;
 }
 
-int main() {}
+int main() {
+  fmt::print("Building grammar.\n");
+  grammar_spec_t rubbish_algebra{.variables = {},
+                                 .functions = {},
+                                 .operators =
+                                     {
+                                         operator_t("+", left_v, 10),
+                                         operator_t("-", left_v, 10),
+                                         operator_t("*", left_v, 20),
+                                         operator_t("/", left_v, 20),
+                                         operator_t("^", right_v, 30),
+                                     },
+                                 .lparens = {lparen_t("(")},
+                                 .rparens = {rparen_t(")")}};
+
+  fmt::print("Calling parse_formula.\n");
+  shunting_yard_result_t val = parse_formula("1 + 1 / 2", rubbish_algebra);
+}
