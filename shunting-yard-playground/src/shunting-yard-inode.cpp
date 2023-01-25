@@ -248,7 +248,7 @@ shunting_yard_result_t constexpr parse_formula(std::string_view formula,
   // There are tokens to be read
   while (trim_whitespaces(formula), !formula.empty()) {
     if (!std::is_constant_evaluated()) {
-      fmt::print("Formula: \"{}\"\n", formula);
+      fmt::print("- Current step: \"{}\"\n", formula);
     }
     // read a token
 
@@ -408,9 +408,10 @@ constexpr bool foo() {
 
   shunting_yard_result_t parsing_result =
       // parse_formula("3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3", rubbish_algebra);
-      parse_formula("sin ( max ( 2, 3 ) / 3 * pi )", rubbish_algebra);
+      parse_formula("sin ( max ( 2, 3 ) / 3 * pi ^ 2 )", rubbish_algebra);
 
   if (!std::is_constant_evaluated()) {
+    fmt::print("Result: ");
     for (token_t const *current_token_pointer : parsing_result.output_queue) {
       fmt::print("{} ", current_token_pointer->text);
     }
