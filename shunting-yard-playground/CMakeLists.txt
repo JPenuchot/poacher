@@ -8,11 +8,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(BUILD_TESTING ON CACHE BOOL "Enable or disable tests")
 
 find_package(fmt REQUIRED)
+link_libraries(fmt::fmt)
 
 # Build
 add_executable(shunting-yard ${SOURCES})
 target_include_directories(shunting-yard PUBLIC include)
-link_libraries(fmt::fmt)
 
 # if(BUILD_TESTING)
 #   add_subdirectory(tests)
