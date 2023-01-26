@@ -1,8 +1,14 @@
 #pragma once
 
 #include <string_view>
+#include <vector>
+
+#include <cest/memory.hpp>
 
 namespace shunting_yard {
+
+/// unique_ptr implementation namespace selector
+namespace unique_ptr_selector = cest;
 
 /// Token kind to match with token types
 enum token_kind_t {
@@ -128,5 +134,25 @@ constexpr auto token_t::visit(VisitorType visitor) const {
     return visitor(static_cast<constant_t const &>(*this));
   }
 }
+
+/// Grammar specification that defines a formula to recognizable with the
+/// shunting-yard algorithm.
+struct token_specification_t {
+  std::vector<variable_t> variables;
+  std::vector<function_t> functions;
+  std::vector<operator_t> operators;
+  std::vector<lparen_t> lparens;
+  std::vector<rparen_t> rparens;
+};
+
+/// Represents the parsing result of parse_formula.
+struct rpn_result_t {
+  /// List of tokens (RPN notation)
+  std::vector<token_t const *> output_queue;
+
+  /// Polymorphic buffer for tokens that aren't already held in the
+  /// grammar_spec_t object (constants)
+  std::vector<unique_ptr_selector::unique_ptr<token_t>> token_memory;
+};
 
 } // namespace shunting_yard

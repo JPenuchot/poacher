@@ -4,21 +4,15 @@
 // https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
 #include <iterator>
-#include <memory>
 #include <ranges>
 #include <string_view>
 #include <vector>
 
 #include <fmt/core.h>
 
-#include <cest/memory.hpp>
-
 #include <shunting-yard/types.hpp>
 
 namespace shunting_yard {
-
-// unique_ptr implementation selector
-namespace unique_ptr_selector = cest;
 
 /// Tries to parse a token from the token list and returns an iterator to it.
 /// - If found, it will be removed from the beginning of formula.
@@ -84,37 +78,17 @@ constexpr void trim_formula(std::string_view &formula,
   }
 }
 
-/// Grammar specification that defines a formula to recognizable with the
-/// shunting-yard algorithm.
-struct grammar_spec_t {
-  std::vector<variable_t> variables;
-  std::vector<function_t> functions;
-  std::vector<operator_t> operators;
-  std::vector<lparen_t> lparens;
-  std::vector<rparen_t> rparens;
-};
-
-/// Represents the parsing result of parse_formula.
-struct shunting_yard_result_t {
-  /// List of tokens (RPN notation)
-  std::vector<token_t const *> output_queue;
-
-  /// Polymorphic buffer for tokens that aren't already held in the
-  /// grammar_spec_t object (constants)
-  std::vector<unique_ptr_selector::unique_ptr<token_t>> token_memory;
-};
-
 /// Parses a formula. The result is a vector of pointers to token_spec_t
 /// elements contained in the various vectors of spec.
-shunting_yard_result_t constexpr parse_formula(std::string_view formula,
-                                               grammar_spec_t const &spec) {
+rpn_result_t constexpr parse_to_rpn(std::string_view formula,
+                                    token_specification_t const &spec) {
   // The functions referred to in this algorithm are simple single argument
   // functions such as sine, inverse or factorial.
 
   // This implementation does not implement composite functions, functions
   // with a variable number of arguments, or unary operators.
 
-  shunting_yard_result_t result;
+  rpn_result_t result;
   std::vector<token_t const *> operator_stack;
 
   if (!std::is_constant_evaluated()) {
@@ -167,8 +141,8 @@ shunting_yard_result_t constexpr parse_formula(std::string_view formula,
                                                   &operator_b_as_auto) -> bool {
                if constexpr (std::is_same_v<OperatorBType, operator_t>) {
                  operator_t const &operator_b = operator_b_as_auto;
-                 // if (b has greater precedence than a or
-                 // (a and b have the same precedence and a is
+                 // if ('b' has greater precedence than 'a' or
+                 // ('a' and 'b' have the same precedence and 'a' is
                  // left-associative))
                  if (operator_b.precedence > operator_a.precedence ||
                      (operator_a.precedence == operator_b.precedence &&
@@ -176,17 +150,17 @@ shunting_yard_result_t constexpr parse_formula(std::string_view formula,
                    return true;
                  }
                } else if constexpr (std::is_same_v<OperatorBType, function_t>) {
-                 // or operator_b is a function
+                 // or 'b' is a function
                  return true;
                }
                // left parenthesis or lower precedence operator
                return false;
              })) {
-        // pop b from the operator stack into the output queue
+        // pop 'b' from the operator stack into the output queue
         result.output_queue.push_back(operator_stack.back());
         operator_stack.pop_back();
       }
-      // push a onto the operator stack
+      // push 'a' onto the operator stack
       operator_stack.push_back(operator_a_spec_iterator.base());
     }
 
