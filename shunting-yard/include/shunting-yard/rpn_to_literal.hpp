@@ -118,7 +118,8 @@ flatten_rpn_result(rpn_result_t const &rpn_input,
 /// Asuming Fun is a constexpr function that returns a std::vector value,
 /// eval_as_array will store its contents into an std::array.
 template <auto Fun> constexpr auto eval_as_array() {
-  std::array<typename decltype(Fun())::value_type, Fun().size()> res;
+  constexpr std::size_t Size = Fun().size();
+  std::array<typename decltype(Fun())::value_type, Size> res;
   std::ranges::copy(Fun(), res.begin());
   return res;
 }
