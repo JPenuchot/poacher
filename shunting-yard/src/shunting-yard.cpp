@@ -1,6 +1,9 @@
-#include <shunting-yard/parse_to_rpn.hpp>
+#include <algorithm>
 
-constexpr bool foo() {
+#include <shunting-yard/parse_to_rpn.hpp>
+#include <shunting-yard/rpn_to_literal.hpp>
+
+constexpr std::vector<shunting_yard::literal_token_t> foo() {
   namespace sy = shunting_yard;
 
   sy::token_specification_t rubbish_algebra{
@@ -37,10 +40,14 @@ constexpr bool foo() {
     fmt::print("\n");
   }
 
-  return true;
+  std::vector<sy::literal_token_t> flat_parsing_result =
+      sy::flatten_rpn_result(parsing_result, rubbish_algebra);
+
+  return flat_parsing_result;
 }
 
 int main() {
-  static_assert(foo());
+  static_assert(!foo().empty());
   foo();
+  constexpr auto val = shunting_yard::eval_as_array<&foo>();
 }
