@@ -49,5 +49,10 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
 int main() {
   static_assert(!foo().empty());
   foo();
-  constexpr auto val = shunting_yard::eval_as_array<&foo>();
+
+  // Static qualifier is necessary, no idea why
+  static constexpr auto val = shunting_yard::eval_as_array<&foo>();
+
+  constexpr auto val_as_tuple =
+      shunting_yard::array_of_variants_to_tuple<val>();
 }
