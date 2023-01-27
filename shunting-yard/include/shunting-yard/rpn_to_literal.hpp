@@ -2,6 +2,7 @@
 
 #include <array>
 #include <concepts>
+#include <tuple>
 #include <type_traits>
 #include <variant>
 
@@ -26,6 +27,7 @@ concept is_literal_token_c = requires(T e) {
 struct literal_failure_t : literal_token_base_t {
   constexpr literal_failure_t() : literal_token_base_t{{}} {}
 
+  /// Conversion function
   constexpr literal_failure_t(failure_t const &non_literal)
       : literal_failure_t() {}
 };
@@ -35,6 +37,7 @@ struct literal_variable_t : literal_token_base_t {
   constexpr literal_variable_t(std::string_view identifier)
       : literal_token_base_t{identifier} {}
 
+  /// Conversion function
   constexpr literal_variable_t(variable_t const &non_literal)
       : literal_variable_t(non_literal.text) {}
 };
@@ -44,6 +47,7 @@ struct literal_function_t : literal_token_base_t {
   constexpr literal_function_t(std::string_view identifier)
       : literal_token_base_t{identifier} {}
 
+  /// Conversion function
   constexpr literal_function_t(function_t const &non_literal)
       : literal_function_t(non_literal.text) {}
 };
@@ -59,6 +63,7 @@ struct literal_operator_t : literal_token_base_t {
       : literal_token_base_t{identifier}, associativity(associativity_),
         precedence(precedence_) {}
 
+  /// Conversion function
   constexpr literal_operator_t(operator_t const &non_literal)
       : literal_operator_t(non_literal.text, non_literal.associativity,
                            non_literal.precedence) {}
@@ -69,6 +74,7 @@ struct literal_lparen_t : literal_token_base_t {
   constexpr literal_lparen_t(std::string_view identifier)
       : literal_token_base_t{identifier} {}
 
+  /// Conversion function
   constexpr literal_lparen_t(lparen_t const &non_literal)
       : literal_lparen_t(non_literal.text) {}
 };
@@ -78,6 +84,7 @@ struct literal_rparen_t : literal_token_base_t {
   constexpr literal_rparen_t(std::string_view identifier)
       : literal_token_base_t{identifier} {}
 
+  /// Conversion function
   constexpr literal_rparen_t(rparen_t const &non_literal)
       : literal_rparen_t(non_literal.text) {}
 };
@@ -88,6 +95,7 @@ struct literal_constant_t : literal_token_base_t {
   constexpr literal_constant_t(unsigned value_, std::string_view number)
       : literal_token_base_t{number}, value(value_) {}
 
+  /// Conversion function
   constexpr literal_constant_t(constant_t const &non_literal)
       : literal_constant_t(non_literal.value, non_literal.text) {}
 };
@@ -122,6 +130,31 @@ template <auto Fun> constexpr auto eval_as_array() {
   std::array<typename decltype(Fun())::value_type, Size> res;
   std::ranges::copy(Fun(), res.begin());
   return res;
+}
+
+/// Converts an array of variants into a tuple of
+/// its value as their underlaying types.
+template <auto const &ArrayOfVariants>
+constexpr auto array_of_variants_to_tuple() {
+  // Storing the size of the array in a constexpr variable.
+  constexpr std::size_t Size = ArrayOfVariants.size();
+
+  // Static for-loop on array indexes
+  return []<std::size_t... ArrayIndexes>(std::index_sequence<ArrayIndexes...>) {
+    // Making a tuple of the array elements
+    return std::make_tuple((
+        // Unrolling the fold expression into a lambda that extracts the variant
+        // elements into values of their actual types
+        []<std::size_t ArrayIndex>(
+            std::integral_constant<std::size_t, ArrayIndex>) {
+          // Extracting type index into a constexpr variable
+          constexpr std::size_t TypeIndex = ArrayOfVariants[ArrayIndex].index();
+          // Getting the underlaying value
+          return std::get<TypeIndex>(ArrayOfVariants[ArrayIndex]);
+        }(std::integral_constant<std::size_t, ArrayIndexes>{}),
+        ...));
+  }
+  (std::make_index_sequence<Size>{});
 }
 
 } // namespace shunting_yard
