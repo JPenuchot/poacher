@@ -26,7 +26,7 @@ parse_token_from_spec_list(std::string_view &formula,
                            RangeType const &token_list) {
   // Try to find the token from the list
   std::ranges::iterator_t<RangeType const> token_iterator =
-      std::ranges::find_if(token_list, [&](token_t const &token) {
+      std::ranges::find_if(token_list, [&](token_base_t const &token) {
         return formula.starts_with(token.text);
       });
 
@@ -44,7 +44,7 @@ parse_token_from_spec_list(std::string_view &formula,
 /// - If not, formula remains unchanged and it will return a failure_t object.
 /// Whitespaces are not trimmed by the function either before or after the
 /// parsing.
-constexpr unique_ptr_selector::unique_ptr<token_t>
+constexpr unique_ptr_selector::unique_ptr<token_base_t>
 parse_number(std::string_view &text) {
   // Checking for presence of a digit
   std::size_t find_result = text.find_first_not_of("0123456789");
@@ -89,7 +89,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
   // with a variable number of arguments, or unary operators.
 
   rpn_result_t result;
-  std::vector<token_t const *> operator_stack;
+  std::vector<token_base_t const *> operator_stack;
 
   if (!std::is_constant_evaluated()) {
     fmt::print("Starting formula: \"{}\"\n", formula);
@@ -103,7 +103,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
     // read a token
 
     // Token is a number constant
-    if (unique_ptr_selector::unique_ptr<token_t> parsed_token =
+    if (unique_ptr_selector::unique_ptr<token_base_t> parsed_token =
             parse_number(formula);
         parsed_token->kind == constant_v) {
       // Put it into the output queue

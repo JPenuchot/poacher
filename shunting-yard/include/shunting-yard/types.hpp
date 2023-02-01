@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <variant>
 #include <vector>
 
 #include <cest/memory.hpp>
@@ -24,13 +25,13 @@ enum token_kind_t {
 /// Common type for token specifications. All tokens have an identifier and a
 /// kind. More specific data can be attached for children, such as precedence
 /// for operators or arity for functions.
-struct token_t {
+struct token_base_t {
   token_kind_t kind;
   std::string_view text;
 
-  constexpr virtual ~token_t() = default;
+  constexpr virtual ~token_base_t() = default;
 
-  constexpr token_t(token_kind_t kind_, std::string_view text_)
+  constexpr token_base_t(token_kind_t kind_, std::string_view text_)
       : kind(kind_), text(text_) {}
 
   /// Calls visitor with current token casted to its underlaying type.
@@ -45,58 +46,58 @@ struct token_t {
 };
 
 /// Empty token for parsing failure management
-struct failure_t : token_t {
-  constexpr failure_t() : token_t(failure_v, {}) {}
+struct failure_t : token_base_t {
+  constexpr failure_t() : token_base_t(failure_v, {}) {}
 };
 
 /// Variable spec type
-struct variable_t : token_t {
+struct variable_t : token_base_t {
   constexpr variable_t(std::string_view identifier)
-      : token_t(variable_v, identifier) {}
+      : token_base_t(variable_v, identifier) {}
 };
 
 /// Function spec type
-struct function_t : token_t {
+struct function_t : token_base_t {
   constexpr function_t(std::string_view identifier)
-      : token_t(function_v, identifier) {}
+      : token_base_t(function_v, identifier) {}
 };
 
 /// Operator associativity
 enum operator_associativity_t { left_v, right_v };
 
 /// Operator spec type
-struct operator_t : token_t {
+struct operator_t : token_base_t {
   operator_associativity_t associativity;
   unsigned precedence;
 
   constexpr operator_t(std::string_view identifier,
                        operator_associativity_t associativity_,
                        unsigned precedence_)
-      : token_t(operator_v, identifier), associativity(associativity_),
+      : token_base_t(operator_v, identifier), associativity(associativity_),
         precedence(precedence_) {}
 };
 
 /// Left parenthesis spec type
-struct lparen_t : token_t {
+struct lparen_t : token_base_t {
   constexpr lparen_t(std::string_view identifier)
-      : token_t(lparen_v, identifier) {}
+      : token_base_t(lparen_v, identifier) {}
 };
 
 /// Right parenthesis spec type
-struct rparen_t : token_t {
+struct rparen_t : token_base_t {
   constexpr rparen_t(std::string_view identifier)
-      : token_t(rparen_v, identifier) {}
+      : token_base_t(rparen_v, identifier) {}
 };
 
 /// Constant (unsigned integer)
-struct constant_t : token_t {
+struct constant_t : token_base_t {
   unsigned value;
   constexpr constant_t(unsigned value_, std::string_view number)
-      : token_t(constant_v, number), value(value_) {}
+      : token_base_t(constant_v, number), value(value_) {}
 };
 
 template <typename VisitorType>
-constexpr auto token_t::visit(VisitorType visitor) {
+constexpr auto token_base_t::visit(VisitorType visitor) {
   switch (kind) {
   case failure_v:
     return visitor(static_cast<failure_t &>(*this));
@@ -116,7 +117,7 @@ constexpr auto token_t::visit(VisitorType visitor) {
 }
 
 template <typename VisitorType>
-constexpr auto token_t::visit(VisitorType visitor) const {
+constexpr auto token_base_t::visit(VisitorType visitor) const {
   switch (kind) {
   case failure_v:
     return visitor(static_cast<failure_t const &>(*this));
@@ -148,11 +149,111 @@ struct token_specification_t {
 /// Represents the parsing result of parse_formula.
 struct rpn_result_t {
   /// List of tokens (RPN notation)
-  std::vector<token_t const *> output_queue;
+  std::vector<token_base_t const *> output_queue;
 
   /// Polymorphic buffer for tokens that aren't already held in the
   /// grammar_spec_t object (constants)
-  std::vector<unique_ptr_selector::unique_ptr<token_t>> token_memory;
+  std::vector<unique_ptr_selector::unique_ptr<token_base_t>> token_memory;
 };
+
+/// Literal version for token base type (see token_t)
+struct literal_token_base_t {
+  std::string_view text;
+};
+
+template <typename T>
+concept is_literal_token_c = requires(T e) {
+                               {
+                                 e.text
+                                 } -> std::convertible_to<std::string_view>;
+                             };
+
+/// Literal version for empty token for parsing failure management
+struct literal_failure_t : literal_token_base_t {
+  constexpr literal_failure_t() : literal_token_base_t{{}} {}
+
+  /// Conversion function
+  constexpr literal_failure_t(failure_t const &non_literal)
+      : literal_failure_t() {}
+};
+
+/// Literal version for variable spec type
+struct literal_variable_t : literal_token_base_t {
+  constexpr literal_variable_t(std::string_view identifier)
+      : literal_token_base_t{identifier} {}
+
+  /// Conversion function
+  constexpr literal_variable_t(variable_t const &non_literal)
+      : literal_variable_t(non_literal.text) {}
+};
+
+/// Literal version for function spec type
+struct literal_function_t : literal_token_base_t {
+  constexpr literal_function_t(std::string_view identifier)
+      : literal_token_base_t{identifier} {}
+
+  /// Conversion function
+  constexpr literal_function_t(function_t const &non_literal)
+      : literal_function_t(non_literal.text) {}
+};
+
+/// Literal version for operator spec type
+struct literal_operator_t : literal_token_base_t {
+  operator_associativity_t associativity;
+  unsigned precedence;
+
+  constexpr literal_operator_t(std::string_view identifier,
+                               operator_associativity_t associativity_,
+                               unsigned precedence_)
+      : literal_token_base_t{identifier}, associativity(associativity_),
+        precedence(precedence_) {}
+
+  /// Conversion function
+  constexpr literal_operator_t(operator_t const &non_literal)
+      : literal_operator_t(non_literal.text, non_literal.associativity,
+                           non_literal.precedence) {}
+};
+
+/// Literal version for left parenthesis spec type
+struct literal_lparen_t : literal_token_base_t {
+  constexpr literal_lparen_t(std::string_view identifier)
+      : literal_token_base_t{identifier} {}
+
+  /// Conversion function
+  constexpr literal_lparen_t(lparen_t const &non_literal)
+      : literal_lparen_t(non_literal.text) {}
+};
+
+/// Literal version for right parenthesis spec type
+struct literal_rparen_t : literal_token_base_t {
+  constexpr literal_rparen_t(std::string_view identifier)
+      : literal_token_base_t{identifier} {}
+
+  /// Conversion function
+  constexpr literal_rparen_t(rparen_t const &non_literal)
+      : literal_rparen_t(non_literal.text) {}
+};
+
+/// Constant (unsigned integer)
+struct literal_constant_t : literal_token_base_t {
+  unsigned value;
+  constexpr literal_constant_t(unsigned value_, std::string_view number)
+      : literal_token_base_t{number}, value(value_) {}
+
+  /// Conversion function
+  constexpr literal_constant_t(constant_t const &non_literal)
+      : literal_constant_t(non_literal.value, non_literal.text) {}
+};
+
+/// Literal generic type for a token.
+using literal_token_t =
+    std::variant<literal_failure_t, literal_variable_t, literal_function_t,
+                 literal_operator_t, literal_lparen_t, literal_rparen_t,
+                 literal_constant_t>;
+
+// Sanity check
+namespace _test {
+constexpr literal_token_t test_literal_token(literal_constant_t(1, "one"));
+}
 
 } // namespace shunting_yard
