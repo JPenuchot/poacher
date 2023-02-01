@@ -28,12 +28,11 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
       .rparens = {sy::rparen_t(")")}};
 
   sy::rpn_result_t parsing_result =
-      // parse_formula("3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3", rubbish_algebra);
       parse_to_rpn("sin ( max ( 2, 3 ) / 3 * pi ^ 2 )", rubbish_algebra);
 
   if (!std::is_constant_evaluated()) {
     fmt::print("Result: ");
-    for (sy::token_t const *current_token_pointer :
+    for (sy::token_base_t const *current_token_pointer :
          parsing_result.output_queue) {
       fmt::print("{} ", current_token_pointer->text);
     }
@@ -47,12 +46,9 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
 }
 
 int main() {
-  static_assert(!foo().empty());
-  foo();
+  namespace sy = shunting_yard;
 
-  // Static qualifier is necessary, no idea why
-  static constexpr auto val = shunting_yard::eval_as_array<&foo>();
-
-  constexpr auto val_as_tuple =
-      shunting_yard::array_of_variants_to_tuple<val>();
+  // Static qualifier is necessary, still no idea why
+  static constexpr auto val = sy::eval_as_array<&foo>();
+  constexpr auto val_as_tuple = sy::array_of_variants_to_tuple<val>();
 }
