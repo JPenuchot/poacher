@@ -256,4 +256,27 @@ namespace _test {
 constexpr literal_token_t test_literal_token(literal_constant_t(1, "one"));
 }
 
+/// Helper kind getter for literal_failure_t.
+constexpr token_kind_t get_kind(literal_failure_t const &) { return failure_v; }
+/// Helper kind getter for literal_variable_t.
+constexpr token_kind_t get_kind(literal_variable_t const &) {
+  return variable_v;
+}
+/// Helper kind getter for literal_function_t.
+constexpr token_kind_t get_kind(literal_function_t const &) {
+  return function_v;
+}
+/// Helper kind getter for literal_operator_t.
+constexpr token_kind_t get_kind(literal_operator_t const &) {
+  return operator_v;
+}
+/// Helper kind getter for literal_lparen_t.
+constexpr token_kind_t get_kind(literal_lparen_t const &) { return lparen_v; }
+/// Helper kind getter for literal_rparen_t.
+constexpr token_kind_t get_kind(literal_rparen_t const &) { return rparen_v; }
+/// Helper kind getter for literal_constant_t.
+constexpr token_kind_t get_kind(literal_constant_t const &) {
+  return constant_v;
+}
+
 } // namespace shunting_yard

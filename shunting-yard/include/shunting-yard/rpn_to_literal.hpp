@@ -6,10 +6,16 @@
 #include <type_traits>
 #include <variant>
 
+#include <kumi/tuple.hpp>
+
 #include <shunting-yard/parse_to_rpn.hpp>
 #include <shunting-yard/types.hpp>
 
 namespace shunting_yard {
+
+/// Tuple implementation choice (kumi or std)
+namespace tuple_implementation = kumi;
+// namespace tuple_implementation = std;
 
 /// Flattens an rpn result to a vector of literal_token_t values.
 constexpr std::vector<literal_token_t>
@@ -43,7 +49,7 @@ constexpr auto array_of_variants_to_tuple() {
   return []<std::size_t... ArrayIndexPack>(
       std::index_sequence<ArrayIndexPack...>) {
     // Making a tuple of the array elements
-    return std::make_tuple((
+    return tuple_implementation::make_tuple((
         // Unrolling the fold expression into a lambda that extracts the variant
         // elements into values of their actual types
         []<std::size_t UnpackedArrayIndex>(
@@ -57,6 +63,28 @@ constexpr auto array_of_variants_to_tuple() {
         ...));
   }
   (std::make_index_sequence<Size>{});
+}
+
+/// For each token in RPNStackAsTuple, consume_tokens will call the
+template <auto const &RPNStackAsTuple,
+          template <auto const &, std::size_t> typename FrontTokenConsumerType,
+          std::size_t RPNStackIndex = 0>
+constexpr auto
+consume_tokens(auto stack_as_tuple = tuple_implementation::make_tuple()) {
+  // If no token is left to handle, return the value stack
+  if constexpr (constexpr std::size_t RPNStackSize = std::tuple_size_v<
+                    std::remove_cvref_t<decltype(RPNStackAsTuple)>>;
+                RPNStackIndex >= RPNStackSize) {
+    return stack_as_tuple;
+  }
+  // Otherwise, apply stack for given token and recurse on next token
+  else if constexpr (RPNStackIndex < RPNStackSize) {
+    // Apply current stack and pass front token as a template parameter
+    return consume_tokens<RPNStackAsTuple, FrontTokenConsumerType,
+                          RPNStackIndex + 1>(tuple_implementation::apply(
+        FrontTokenConsumerType<RPNStackAsTuple, RPNStackIndex>::function,
+        stack_as_tuple));
+  }
 }
 
 } // namespace shunting_yard
