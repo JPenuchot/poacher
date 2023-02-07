@@ -2,8 +2,12 @@
 #include <algorithm>
 
 #include <kumi/tuple.hpp>
+
 #include <shunting-yard/parse_to_rpn.hpp>
 #include <shunting-yard/rpn_to_literal.hpp>
+
+#include <blaze/Blaze.h>
+#include <utility>
 
 constexpr std::vector<shunting_yard::literal_token_t> foo() {
   namespace sy = shunting_yard;
@@ -11,7 +15,8 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
   sy::token_specification_t rubbish_algebra{
       .variables =
           {
-              sy::variable_t("pi"),
+              sy::variable_t("x"),
+              sy::variable_t("y"),
           },
       .functions =
           {
@@ -30,7 +35,7 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
       .rparens = {sy::rparen_t(")")}};
 
   sy::rpn_result_t parsing_result =
-      parse_to_rpn("sin ( max ( 2, 3 ) / 3 * pi ^ 2 )", rubbish_algebra);
+      parse_to_rpn("sin ( max ( x, 3 ) / 3 * y ^ 2 )", rubbish_algebra);
 
   if (!std::is_constant_evaluated()) {
     fmt::print("Result: ");
@@ -50,6 +55,26 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
 int main() {
   namespace sy = shunting_yard;
 
+  foo();
+  // Starting formula: "sin ( max ( x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "sin ( max ( x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "( max ( x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "max ( x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "( x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "x, 3 ) / 3 * y ^ 2 )"
+  // - Current step: "3 ) / 3 * y ^ 2 )"
+  // - Current step: ") / 3 * y ^ 2 )"
+  // - Current step: "/ 3 * y ^ 2 )"
+  // - Current step: "3 * y ^ 2 )"
+  // - Current step: "* y ^ 2 )"
+  // - Current step: "y ^ 2 )"
+  // - Current step: "^ 2 )"
+  // - Current step: "2 )"
+  // - Current step: ")"
+  // Result: x 3 max 3 / y 2 ^ * sin
+
+  // -> ((((x 3 max) 3 /) (y 2 ^) *) sin)
+
   // Variables must be static, and static variables can't be declared in
   // function templates until C++23. C++20 abstractions are undermined by this
   // rule in this use case.
@@ -57,6 +82,83 @@ int main() {
   static constexpr auto rpn_result_tuple =
       sy::array_of_variants_to_tuple<rpn_result_array>();
 
-  constexpr auto processed_result = sy::consume_tokens<rpn_result_tuple>(
-      []<auto const &, std::size_t>(auto val) constexpr { return val; }, 0);
+  blaze::DynamicVector<float> vector_x(512, 0.);
+  blaze::DynamicVector<float> vector_y(512, 12.);
+
+  auto processed_result = sy::consume_tokens<rpn_result_tuple>(
+      [&]<auto const & RPNStackAsTuple, std::size_t RPNStackIndex>(
+          auto operand_stack_tuple) constexpr {
+        constexpr auto TokenAsAuto = kumi::get<RPNStackIndex>(RPNStackAsTuple);
+        constexpr auto TokenKind = sy::get_kind(TokenAsAuto);
+
+        constexpr auto StackSize = kumi::size_v<decltype(operand_stack_tuple)>;
+
+        // Variable dispatch
+        if constexpr (TokenKind == sy::variable_v) {
+          constexpr sy::literal_variable_t CurrentToken = TokenAsAuto;
+
+          if constexpr (CurrentToken.text == "x") {
+            return kumi::push_back(operand_stack_tuple, vector_x);
+          } else if constexpr (CurrentToken.text == "y") {
+            return kumi::push_back(operand_stack_tuple, vector_y);
+          }
+
+          return RPNStackIndex;
+        }
+
+        // Function dispatch
+        else if constexpr (TokenKind == sy::function_v) {
+          constexpr sy::literal_function_t CurrentToken = TokenAsAuto;
+
+          if constexpr (StackSize == 0) {
+            return RPNStackIndex;
+          }
+
+          // Enpty stack, big problem.
+          else if constexpr (CurrentToken.text == "sin") {
+            return kumi::make_tuple(blaze::sin(operand_stack_tuple.back()));
+          } else if constexpr (CurrentToken.text == "max") {
+            return kumi::make_tuple(kumi::apply(
+                [](auto const &...operands) { return blaze::max(operands...); },
+                operand_stack_tuple));
+          }
+        }
+
+        // Operator dispatch
+        else if constexpr (TokenKind == sy::operator_v) {
+          if constexpr (StackSize < 2) {
+            return RPNStackIndex;
+          }
+
+          constexpr sy::literal_operator_t CurrentToken = TokenAsAuto;
+
+          auto const &variable_a = operand_stack_tuple.pop_back().back();
+          auto const &variable_b = operand_stack_tuple.back();
+
+          // Popping the 2 last operands to be replaced
+          // with binary operation result
+          auto head = kumi::pop_back(kumi::pop_back(operand_stack_tuple));
+
+          if constexpr (CurrentToken.text == "+") {
+            return kumi::push_back(head, variable_a + variable_b);
+          } else if constexpr (CurrentToken.text == "-") {
+            return kumi::push_back(head, variable_a - variable_b);
+          } else if constexpr (CurrentToken.text == "*") {
+            return kumi::push_back(head, variable_a * variable_b);
+          } else if constexpr (CurrentToken.text == "/") {
+            return kumi::push_back(head, variable_a / variable_b);
+          } else if constexpr (CurrentToken.text == "^") {
+            return kumi::push_back(head, variable_a ^ variable_b);
+          }
+        }
+
+        // Constant handling
+        else if constexpr (TokenKind == sy::constant_v) {
+          constexpr sy::literal_constant_t CurrentToken = TokenAsAuto;
+          return kumi::push_back(operand_stack_tuple, CurrentToken.value);
+        }
+
+        return operand_stack_tuple;
+      },
+      kumi::make_tuple());
 }
