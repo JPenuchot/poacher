@@ -2,7 +2,6 @@
 
 #include <array>
 #include <concepts>
-#include <tuple>
 #include <type_traits>
 #include <variant>
 
@@ -12,10 +11,6 @@
 #include <shunting-yard/types.hpp>
 
 namespace shunting_yard {
-
-/// Tuple implementation choice (kumi or std)
-namespace tuple_implementation = kumi;
-// namespace tuple_implementation = std;
 
 /// Flattens an rpn result to a vector of literal_token_t values.
 constexpr std::vector<literal_token_t>
@@ -49,7 +44,7 @@ constexpr auto array_of_variants_to_tuple() {
   return []<std::size_t... ArrayIndexPack>(
       std::index_sequence<ArrayIndexPack...>) {
     // Making a tuple of the array elements
-    return tuple_implementation::make_tuple((
+    return kumi::make_tuple((
         // Unrolling the fold expression into a lambda that extracts the variant
         // elements into values of their actual types
         []<std::size_t UnpackedArrayIndex>(
@@ -69,9 +64,9 @@ constexpr auto array_of_variants_to_tuple() {
 template <auto const &RPNStackAsTuple, std::size_t RPNStackIndex = 0>
 constexpr auto consume_tokens(auto consumer, auto state) {
   // If no token is left to handle, return the value stack
-  if constexpr (constexpr std::size_t RPNStackSize = std::tuple_size_v<
+  if constexpr (constexpr std::size_t RPNStackSize = kumi::size_v<
                     std::remove_cvref_t<decltype(RPNStackAsTuple)>>;
-                RPNStackIndex >= RPNStackSize) {
+                RPNStackIndex == RPNStackSize) {
     return state;
   }
   // Otherwise, apply stack for given token and recurse on next token
@@ -80,7 +75,7 @@ constexpr auto consume_tokens(auto consumer, auto state) {
     return consume_tokens<RPNStackAsTuple, RPNStackIndex + 1>(
         consumer,
         consumer.template operator()<RPNStackAsTuple, RPNStackIndex>(state));
-
+  }
 }
 
 } // namespace shunting_yard
