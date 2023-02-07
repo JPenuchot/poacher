@@ -47,23 +47,6 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
   return flat_parsing_result;
 }
 
-/// Takes an RPN stack as tuple and an RPN index that point to a token,
-/// and returns a function object
-template <auto const &RPNStackAsTuple, std::size_t RPNStackIndex>
-struct dispatcher_t {
-  /// Takes the values of the stack as a parameter pack
-  static constexpr auto function = [](auto... values) constexpr {
-    constexpr auto CurrentToken =
-        shunting_yard::tuple_implementation::get<RPNStackIndex>(
-            RPNStackAsTuple);
-
-    auto res = shunting_yard::tuple_implementation::make_tuple(CurrentToken,
-                                                               values...);
-
-    return res;
-  };
-};
-
 int main() {
   namespace sy = shunting_yard;
 
@@ -74,7 +57,6 @@ int main() {
   static constexpr auto rpn_result_tuple =
       sy::array_of_variants_to_tuple<rpn_result_array>();
 
-  constexpr auto processed_result =
-      sy::consume_tokens<rpn_result_tuple, dispatcher_t>(
-          sy::tuple_implementation::make_tuple());
+  constexpr auto processed_result = sy::consume_tokens<rpn_result_tuple>(
+      []<auto const &, std::size_t>(auto val) constexpr { return val; }, 0);
 }

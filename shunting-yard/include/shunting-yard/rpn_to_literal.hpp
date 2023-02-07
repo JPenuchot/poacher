@@ -66,25 +66,21 @@ constexpr auto array_of_variants_to_tuple() {
 }
 
 /// For each token in RPNStackAsTuple, consume_tokens will call the
-template <auto const &RPNStackAsTuple,
-          template <auto const &, std::size_t> typename FrontTokenConsumerType,
-          std::size_t RPNStackIndex = 0>
-constexpr auto
-consume_tokens(auto stack_as_tuple = tuple_implementation::make_tuple()) {
+template <auto const &RPNStackAsTuple, std::size_t RPNStackIndex = 0>
+constexpr auto consume_tokens(auto consumer, auto state) {
   // If no token is left to handle, return the value stack
   if constexpr (constexpr std::size_t RPNStackSize = std::tuple_size_v<
                     std::remove_cvref_t<decltype(RPNStackAsTuple)>>;
                 RPNStackIndex >= RPNStackSize) {
-    return stack_as_tuple;
+    return state;
   }
   // Otherwise, apply stack for given token and recurse on next token
   else if constexpr (RPNStackIndex < RPNStackSize) {
     // Apply current stack and pass front token as a template parameter
-    return consume_tokens<RPNStackAsTuple, FrontTokenConsumerType,
-                          RPNStackIndex + 1>(tuple_implementation::apply(
-        FrontTokenConsumerType<RPNStackAsTuple, RPNStackIndex>::function,
-        stack_as_tuple));
-  }
+    return consume_tokens<RPNStackAsTuple, RPNStackIndex + 1>(
+        consumer,
+        consumer.template operator()<RPNStackAsTuple, RPNStackIndex>(state));
+
 }
 
 } // namespace shunting_yard
