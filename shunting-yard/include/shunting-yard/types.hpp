@@ -173,7 +173,7 @@ struct literal_failure_t : literal_token_base_t {
   constexpr literal_failure_t() : literal_token_base_t{{}} {}
 
   /// Conversion function
-  constexpr literal_failure_t(failure_t const &non_literal)
+  constexpr literal_failure_t(failure_t const &)
       : literal_failure_t() {}
 };
 
