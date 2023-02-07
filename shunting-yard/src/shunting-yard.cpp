@@ -1,5 +1,7 @@
+#include "shunting-yard/types.hpp"
 #include <algorithm>
 
+#include <kumi/tuple.hpp>
 #include <shunting-yard/parse_to_rpn.hpp>
 #include <shunting-yard/rpn_to_literal.hpp>
 
@@ -45,10 +47,34 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
   return flat_parsing_result;
 }
 
+/// Takes an RPN stack as tuple and an RPN index that point to a token,
+/// and returns a function object
+template <auto const &RPNStackAsTuple, std::size_t RPNStackIndex>
+struct dispatcher_t {
+  /// Takes the values of the stack as a parameter pack
+  static constexpr auto function = [](auto... values) constexpr {
+    constexpr auto CurrentToken =
+        shunting_yard::tuple_implementation::get<RPNStackIndex>(
+            RPNStackAsTuple);
+
+    auto res = shunting_yard::tuple_implementation::make_tuple(CurrentToken,
+                                                               values...);
+
+    return res;
+  };
+};
+
 int main() {
   namespace sy = shunting_yard;
 
-  // Static qualifier is necessary, still no idea why
-  static constexpr auto val = sy::eval_as_array<&foo>();
-  constexpr auto val_as_tuple = sy::array_of_variants_to_tuple<val>();
+  // Variables must be static, and static variables can't be declared in
+  // function templates until C++23. C++20 abstractions are undermined by this
+  // rule in this use case.
+  static constexpr auto rpn_result_array = sy::eval_as_array<&foo>();
+  static constexpr auto rpn_result_tuple =
+      sy::array_of_variants_to_tuple<rpn_result_array>();
+
+  constexpr auto processed_result =
+      sy::consume_tokens<rpn_result_tuple, dispatcher_t>(
+          sy::tuple_implementation::make_tuple());
 }
