@@ -14,8 +14,7 @@ namespace shunting_yard {
 
 /// Flattens an rpn result to a vector of literal_token_t values.
 constexpr std::vector<literal_token_t>
-flatten_rpn_result(rpn_result_t const &rpn_input,
-                   token_specification_t const &spec) {
+flatten_rpn_result(rpn_result_t const &rpn_input) {
   std::vector<literal_token_t> result;
   for (token_base_t const *token_ptr : rpn_input.output_queue) {
     token_ptr->visit(
@@ -44,7 +43,7 @@ constexpr auto array_of_variants_to_tuple() {
   return []<std::size_t... ArrayIndexPack>(
       std::index_sequence<ArrayIndexPack...>) {
     // Making a tuple of the array elements
-    return kumi::make_tuple((
+    return kumi::make_tuple(
         // Unrolling the fold expression into a lambda that extracts the variant
         // elements into values of their actual types
         []<std::size_t UnpackedArrayIndex>(
@@ -54,8 +53,7 @@ constexpr auto array_of_variants_to_tuple() {
               ArrayOfVariants[UnpackedArrayIndex].index();
           // Getting the underlaying value
           return std::get<TypeIndex>(ArrayOfVariants[UnpackedArrayIndex]);
-        }(std::integral_constant<std::size_t, ArrayIndexPack>{}),
-        ...));
+        }(std::integral_constant<std::size_t, ArrayIndexPack>{})...);
   }
   (std::make_index_sequence<Size>{});
 }
