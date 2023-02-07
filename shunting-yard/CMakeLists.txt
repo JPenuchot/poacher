@@ -9,9 +9,11 @@ set(BUILD_TESTING ON CACHE BOOL "Enable or disable tests")
 
 find_package(fmt REQUIRED)
 find_package(kumi REQUIRED)
+find_package(blaze REQUIRED)
 
 link_libraries(fmt::fmt)
 link_libraries(kumi::kumi)
+link_libraries(blaze::blaze)
 
 # Build
 add_executable(shunting-yard ${SOURCES})
