@@ -136,21 +136,14 @@ int main() {
         else if constexpr (TokenKind == sy::function_v) {
           constexpr sy::literal_function_t CurrentToken = TokenAsAuto;
 
-          // Enpty stack, big problem.
-          if constexpr (StackSize == 0) {
-            return RPNStackIndex;
-          }
-
-          // blaze::sin dispatch
-          else if constexpr (CurrentToken.text == "sin") {
+          if constexpr (CurrentToken.text == "sin") {
             auto const &operand = kumi::get<StackSize - 1>(operand_stack_tuple);
             auto head = kumi::pop_back(operand_stack_tuple);
 
-            return kumi::push_back(
-                head, [operand]() { return blaze::sin(operand()); });
+            return kumi::push_back(head,
+                                   [operand]() { return sin(operand()); });
           }
 
-          // blaze::max dispatch
           else if constexpr (CurrentToken.text == "max") {
             auto const &operand_a =
                 kumi::get<StackSize - 2>(operand_stack_tuple);
@@ -159,7 +152,7 @@ int main() {
             auto head = kumi::pop_back(kumi::pop_back(operand_stack_tuple));
 
             return kumi::push_back(head, [operand_a, operand_b]() {
-              return blaze::max(operand_a(), operand_b());
+              return max(operand_a(), operand_b());
             });
           }
         }
