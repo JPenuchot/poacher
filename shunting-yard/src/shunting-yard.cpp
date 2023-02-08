@@ -1,13 +1,15 @@
-#include "shunting-yard/types.hpp"
 #include <algorithm>
+#include <utility>
+
+#include <fmt/core.h>
 
 #include <kumi/tuple.hpp>
 
 #include <shunting-yard/parse_to_rpn.hpp>
 #include <shunting-yard/rpn_to_literal.hpp>
+#include <shunting-yard/types.hpp>
 
 #include <blaze/Blaze.h>
-#include <utility>
 
 constexpr std::vector<shunting_yard::literal_token_t> foo() {
   namespace sy = shunting_yard;
@@ -35,7 +37,8 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
       .rparens = {sy::rparen_t(")")}};
 
   sy::rpn_result_t parsing_result =
-      parse_to_rpn("sin ( max ( x, 3 ) / 3 * y ^ 2 )", rubbish_algebra);
+      parse_to_rpn("sin ( ( x + 3 ) / 3 * y ^ 2 )", rubbish_algebra);
+      // parse_to_rpn("x + y + 2 + y", rubbish_algebra);
 
   if (!std::is_constant_evaluated()) {
     fmt::print("Result: ");
@@ -47,7 +50,7 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
   }
 
   std::vector<sy::literal_token_t> flat_parsing_result =
-      sy::flatten_rpn_result(parsing_result, rubbish_algebra);
+      sy::flatten_rpn_result(parsing_result);
 
   return flat_parsing_result;
 }
@@ -82,10 +85,21 @@ int main() {
   static constexpr auto rpn_result_tuple =
       sy::array_of_variants_to_tuple<rpn_result_array>();
 
-  blaze::DynamicVector<float> vector_x(512, 0.);
-  blaze::DynamicVector<float> vector_y(512, 12.);
+  blaze::DynamicVector<float> vector_x(16, 1.);
+  blaze::DynamicVector<float> vector_y(16, 12.);
 
-  auto processed_result = sy::consume_tokens<rpn_result_tuple>(
+  fmt::print("Array: ");
+  for (auto const &e : rpn_result_array) {
+    fmt::print("{} ", std::visit([](auto ee) { return ee.text; }, e));
+  }
+  fmt::print("\n");
+
+  fmt::print("Tuple ({}): ", kumi::size_v<decltype(rpn_result_tuple)>);
+  kumi::for_each([](auto elmt) { fmt::print("{} ", elmt.text); },
+                 rpn_result_tuple);
+  fmt::print("\n");
+
+  [[maybe_unused]] auto processed_result = sy::consume_tokens<rpn_result_tuple>(
       [&]<auto const & RPNStackAsTuple, std::size_t RPNStackIndex>(
           auto operand_stack_tuple) constexpr {
         constexpr auto TokenAsAuto = kumi::get<RPNStackIndex>(RPNStackAsTuple);
@@ -98,12 +112,10 @@ int main() {
           constexpr sy::literal_variable_t CurrentToken = TokenAsAuto;
 
           if constexpr (CurrentToken.text == "x") {
-            return kumi::push_back(operand_stack_tuple, vector_x);
+            return kumi::cat(operand_stack_tuple, kumi::tie(vector_x));
           } else if constexpr (CurrentToken.text == "y") {
-            return kumi::push_back(operand_stack_tuple, vector_y);
+            return kumi::cat(operand_stack_tuple, kumi::tie(vector_y));
           }
-
-          return RPNStackIndex;
         }
 
         // Function dispatch
@@ -116,9 +128,10 @@ int main() {
 
           // Enpty stack, big problem.
           else if constexpr (CurrentToken.text == "sin") {
-            return kumi::make_tuple(blaze::sin(operand_stack_tuple.back()));
+            return kumi::tie(
+                blaze::sin(kumi::get<StackSize - 1>(operand_stack_tuple)));
           } else if constexpr (CurrentToken.text == "max") {
-            return kumi::make_tuple(kumi::apply(
+            return kumi::tie(kumi::apply(
                 [](auto const &...operands) { return blaze::max(operands...); },
                 operand_stack_tuple));
           }
@@ -126,14 +139,12 @@ int main() {
 
         // Operator dispatch
         else if constexpr (TokenKind == sy::operator_v) {
-          if constexpr (StackSize < 2) {
-            return RPNStackIndex;
-          }
-
           constexpr sy::literal_operator_t CurrentToken = TokenAsAuto;
 
-          auto const &variable_a = operand_stack_tuple.pop_back().back();
-          auto const &variable_b = operand_stack_tuple.back();
+          auto const &variable_a =
+              kumi::get<StackSize - 2>(operand_stack_tuple);
+          auto const &variable_b =
+              kumi::get<StackSize - 1>(operand_stack_tuple);
 
           // Popping the 2 last operands to be replaced
           // with binary operation result
@@ -148,7 +159,7 @@ int main() {
           } else if constexpr (CurrentToken.text == "/") {
             return kumi::push_back(head, variable_a / variable_b);
           } else if constexpr (CurrentToken.text == "^") {
-            return kumi::push_back(head, variable_a ^ variable_b);
+            return kumi::push_back(head, blaze::pow(variable_a, variable_b));
           }
         }
 
@@ -157,8 +168,12 @@ int main() {
           constexpr sy::literal_constant_t CurrentToken = TokenAsAuto;
           return kumi::push_back(operand_stack_tuple, CurrentToken.value);
         }
-
-        return operand_stack_tuple;
       },
       kumi::make_tuple());
+
+  blaze::DynamicVector<float> res;
+  res = kumi::get<0>(processed_result); // TODO: fix bad alloc
+  for (float f : res) {
+    fmt::print("{} ", f);
+  }
 }

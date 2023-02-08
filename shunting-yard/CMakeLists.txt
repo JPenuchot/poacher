@@ -15,6 +15,18 @@ link_libraries(fmt::fmt)
 link_libraries(kumi::kumi)
 link_libraries(blaze::blaze)
 
+add_compile_options(
+  -Wall
+            -Wextra
+            -Werror
+            -Wnull-dereference
+            -Wold-style-cast
+            -Wdouble-promotion
+            -Wshadow
+            -fno-rtti
+            -march=native
+            -Wfatal-errors)
+
 # Build
 add_executable(shunting-yard ${SOURCES})
 target_include_directories(shunting-yard PUBLIC include)
