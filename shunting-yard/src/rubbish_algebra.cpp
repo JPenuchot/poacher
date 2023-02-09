@@ -5,7 +5,7 @@
 
 #include <kumi/tuple.hpp>
 
-#include <shunting-yard/parse_to_rpn.hpp>
+#include <shunting_yard.hpp>
 
 #include <blaze/Blaze.h>
 
