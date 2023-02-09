@@ -17,7 +17,7 @@ include(FetchContent)
 FetchContent_Declare(
   dac_content
   GIT_REPOSITORY https://github.com/jothepro/doxygen-awesome-css.git
-  GIT_TAG v2.0.3
+  GIT_TAG v2.1.0
   GIT_SHALLOW)
 
 FetchContent_GetProperties(dac_content)
@@ -27,4 +27,4 @@ endif()
 
 set(DOXYGEN_HTML_EXTRA_STYLESHEET ${dac_content_SOURCE_DIR}/doxygen-awesome.css)
 
-doxygen_add_docs(docs ALL)
+doxygen_add_docs(asciimath-docs ALL)
