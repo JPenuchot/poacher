@@ -11,10 +11,12 @@
 
 #include <blaze/Blaze.h>
 
+/// Parses a given formula to Reverse Polish Notation (RPN).
 template <auto const &Formula>
-constexpr std::vector<shunting_yard::literal_token_t> foo() {
+constexpr std::vector<shunting_yard::literal_token_t> parse_rubbish() {
   namespace sy = shunting_yard;
 
+  // Defining various tokens
   sy::token_specification_t rubbish_algebra{
       .variables =
           {
@@ -39,6 +41,7 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
 
   sy::rpn_result_t parsing_result = parse_to_rpn(Formula, rubbish_algebra);
 
+  // Printing the result (unless the function is constant evaluated)
   if (!std::is_constant_evaluated()) {
     fmt::print("Result: ");
     for (sy::token_base_t const *current_token_pointer :
@@ -48,23 +51,23 @@ constexpr std::vector<shunting_yard::literal_token_t> foo() {
     fmt::print("\n");
   }
 
-  std::vector<sy::literal_token_t> flat_parsing_result =
-      sy::flatten_rpn_result(parsing_result);
-
-  return flat_parsing_result;
+  return sy::flatten_rpn_result(parsing_result);
 }
 
-template <auto const &Formula> auto process_rubbish() {
+/// Parses a given formula and generates the corresponsing code
+template <auto const &Formula>
+auto process_rubbish(auto const &input_x, auto const &input_y) {
   namespace sy = shunting_yard;
 
+  // First transformation into an array
   constexpr static auto rpn_result_array =
-      sy::eval_as_array<[]() constexpr { return foo<Formula>(); }>();
+      sy::eval_as_array<[]() constexpr { return parse_rubbish<Formula>(); }>();
+
+  // Second transformation into a tuple
   constexpr static auto rpn_result_tuple =
       sy::array_of_variants_to_tuple<rpn_result_array>();
 
-  blaze::DynamicVector<float> vector_x(16, 1.);
-  blaze::DynamicVector<float> vector_y(16, 12.);
-
+  // Defining actions for each token
   auto token_processor = [&]<auto const & RPNStackAsTuple,
                              std::size_t RPNStackIndex>(
       auto operand_stack_tuple) constexpr {
@@ -86,13 +89,13 @@ template <auto const &Formula> auto process_rubbish() {
 
       if constexpr (CurrentToken.text == "x") {
         return kumi::push_front(
-            operand_stack_tuple, [&vector_x]() -> auto const & {
-              return vector_x;
+            operand_stack_tuple, [&input_x]() -> auto const & {
+              return input_x;
             });
       } else if constexpr (CurrentToken.text == "y") {
         return kumi::push_front(
-            operand_stack_tuple, [&vector_y]() -> auto const & {
-              return vector_y;
+            operand_stack_tuple, [&input_y]() -> auto const & {
+              return input_y;
             });
       }
     }
@@ -154,26 +157,28 @@ template <auto const &Formula> auto process_rubbish() {
     }
   };
 
-  auto expression_template_generator =
+  // Processing the RPN representation of the formula.
+  // The result should be a single lambda in a tuple.
+  auto [result] =
       sy::consume_tokens<rpn_result_tuple>(token_processor, kumi::make_tuple());
-
-  return kumi::front(expression_template_generator)();
+  return result();
 }
 
 int main() {
-  static constexpr auto formula = "sin ( ( x + 3 ) / 3 * y ^ 2 )";
+  static constexpr auto formula = "sin((x + 3) / 3 * y ^ 2)";
 
   // Runtime parsing prints parsing steps
-  foo<formula>();
+  parse_rubbish<formula>();
 
   // Input vectors
-  blaze::DynamicVector<float> vector_x(16, 1.);
-  blaze::DynamicVector<float> vector_y(16, 12.);
+  constexpr std::size_t vec_size = 16;
+  blaze::DynamicVector<float> vector_x(vec_size, 1.);
+  blaze::DynamicVector<float> vector_y(vec_size, 12.);
 
   // Making an expression template generator. This will output a tuple whose
   // only element is a function that generates a Blaze expression template
   // corresponding to the parsed formula.
-  for (float const e : process_rubbish<formula>()) {
+  for (float const e : process_rubbish<formula>(vector_x, vector_y)) {
     fmt::print("{} ", e);
   }
   fmt::print("\n");
