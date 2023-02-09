@@ -47,13 +47,14 @@ TEST_CASE("Char parsing", "[parser]") {
   REQUIRE(parser.get_parse_view() == "d");
 }
 
+constexpr bool foo() {
+  std::string_view formula("2 / 2");
+  bool is_parsed = asciimath::parser_t(formula).parse_expr();
+  return is_parsed;
+}
+
 TEST_CASE("Formula parsing", "[parser]") {
-//   std::string_view formula("sum_(i=1)^n i^3=((n(n+1))/2)^2");
-  std::string_view formula("2");
-  asciimath::parser_t parser(formula);
+  bool val = foo();
+  REQUIRE(val);
 
-  asciimath::parser_t::parse_result_t<asciimath::ast::expr_t> result =
-      parser.parse_expr();
-
-  REQUIRE(result);
 }
