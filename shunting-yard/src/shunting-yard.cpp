@@ -175,9 +175,7 @@ int main() {
   blaze::DynamicVector<float> vector_x(vec_size, 1.);
   blaze::DynamicVector<float> vector_y(vec_size, 12.);
 
-  // Making an expression template generator. This will output a tuple whose
-  // only element is a function that generates a Blaze expression template
-  // corresponding to the parsed formula.
+  // Processing the formula into an expression template, and printing it.
   for (float const e : process_rubbish<formula>(vector_x, vector_y)) {
     fmt::print("{} ", e);
   }
