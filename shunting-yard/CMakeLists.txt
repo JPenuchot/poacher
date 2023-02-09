@@ -5,7 +5,9 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(BUILD_TESTING ON CACHE BOOL "Enable or disable tests")
+set(BUILD_TESTING
+    ON
+    CACHE BOOL "Enable or disable tests")
 
 find_package(fmt REQUIRED)
 find_package(kumi REQUIRED)
@@ -17,22 +19,18 @@ link_libraries(blaze::blaze)
 
 add_compile_options(
   -Wall
-            -Wextra
-            -Werror
-            -Wnull-dereference
-            -Wold-style-cast
-            -Wdouble-promotion
-            -Wshadow
-            -fno-rtti
-            -march=native
-            -Wfatal-errors)
+  -Wextra
+  -Werror
+  -Wnull-dereference
+  -Wold-style-cast
+  -Wdouble-promotion
+  -Wshadow
+  -fno-rtti
+  -march=native
+  -Wfatal-errors)
 
 # Build
 add_executable(shunting-yard ${SOURCES})
 target_include_directories(shunting-yard PUBLIC include)
-
-# if(BUILD_TESTING)
-#   add_subdirectory(tests)
-# endif(BUILD_TESTING)
 
 include(cmake/docs.cmake)
