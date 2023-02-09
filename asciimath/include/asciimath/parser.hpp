@@ -9,6 +9,7 @@
 #include <asciimath/symbols.hpp>
 #include <asciimath/types.hpp>
 #include <asciimath/utils.hpp>
+#include <type_traits>
 
 namespace asciimath {
 
@@ -78,9 +79,7 @@ public:
   /// Trim whitespaces
   constexpr void trim_whitespaces() {
     _pos = std::find_if_not(_phrase.begin() + _pos, _phrase.end(),
-                            [](std::string_view::value_type c) {
-                              return std::isblank(c, std::locale::classic());
-                            }) -
+                            &utils::is_blank) -
            _phrase.begin();
   }
 
@@ -129,6 +128,13 @@ public:
   //
   // PARSING FUNCTIONS
   //
+
+  constexpr void parse_trace(std::string_view msg) const {
+    constexpr std::string_view trace_format = "{} [{}]";
+    if (!std::is_constant_evaluated()) {
+      utils::trace(fmt::format(trace_format, msg, get_parse_view()));
+    }
+  }
 
   /// If the character is found, it will consume it and return true. Otherwise
   /// it will return false. Does *not* trim whitespaces.
@@ -188,7 +194,7 @@ public:
   /// Parse function template. Specializations for this functions must either
   /// return a value and consume the characters associated to it, or return an
   /// empty parse result and keep the parser state unchanged.
-  template <typename T> constexpr parse_result_t<T> parse() { return {}; }
+  template <typename T> constexpr parse_result_t<T> parse();
 
   constexpr parse_result_t<ast::expr_t> parse_expr() {
     return parse<ast::expr_t>();
@@ -199,34 +205,35 @@ public:
 
   template <>
   constexpr parse_result_t<ast::identifier_t> parse<ast::identifier_t>() {
-    utils::trace("identifier_t");
+    parse_trace("identifier = [A-z]");
 
-    trim_whitespaces();
+    std::size_t const begin = get_pos();
     std::string_view sv = get_parse_view();
 
     // Beginning of the identifier
-    std::string_view::const_iterator begin = sv.begin();
+    std::string_view::const_iterator sv_begin = sv.begin();
 
     // Find first char that isn't a letter
-    std::string_view::const_iterator end = std::find_if_not(
+    std::string_view::const_iterator sv_end = std::find_if_not(
         sv.begin(), sv.end(), [](std::string_view::value_type c) -> bool {
-          return std::isalpha(c, std::locale::classic());
+          return utils::is_alpha(c);
         });
 
     // Empty identifier? Empty result.
-    if (end == begin) {
+    if (sv_end == sv_begin) {
       return {};
     }
 
     // Non-empty identifier
-    return {ast::identifier_t{{begin, end}}, get_pos(), consume(end - begin)};
+    return {ast::identifier_t{{sv_begin, sv_end}}, get_pos(),
+            consume(sv_end - sv_begin)};
   }
 
   //----------------------------------------------------------------------------
   // symbol = /* any string in the symbol table */
 
   template <> constexpr parse_result_t<ast::symbol_t> parse<ast::symbol_t>() {
-    utils::trace("symbol_t");
+    parse_trace("symbol = /* any string in the symbol table */");
 
     // TODO
 
@@ -238,13 +245,12 @@ public:
   // number = '-'? [0-9]+ ( '.' [0-9]+ )?
 
   template <> constexpr parse_result_t<ast::number_t> parse<ast::number_t>() {
-    utils::trace("number_t");
+    parse_trace("number = '-'? [0-9]+ ( '.' [0-9]+ )?");
 
-    trim_whitespaces();
+    std::size_t const begin = get_pos();
 
     std::string_view sv = get_parse_view();
     std::string_view::const_iterator const parse_begin = sv.begin();
-    std::size_t const begin = get_pos();
 
     int val = 0;
     bool minus = false;
@@ -262,13 +268,13 @@ public:
     }
 
     // First digit is mandatory
-    if (sv.empty() || !std::isdigit(sv.front(), std::locale::classic())) {
+    if (sv.empty() || !utils::is_digit(sv.front())) {
       backtrack(begin);
       return {};
     }
 
     // Accumulating into an int...
-    while (!sv.empty() && std::isdigit(sv.front(), std::locale::classic())) {
+    while (!sv.empty() && utils::is_digit(sv.front())) {
       val *= 10;
       val += sv.front() - '0';
 
@@ -284,27 +290,29 @@ public:
 
   template <>
   constexpr parse_result_t<ast::constant_t> parse<ast::constant_t>() {
-    utils::trace("constant_t");
-
-    trim_whitespaces();
+    parse_trace("constant = number | symbol | identifier");
 
     std::size_t const begin = get_pos();
 
     // Number parsing attempt
-    if (parse_result_t<ast::number_t> number = parse<ast::number_t>(); number) {
+    if (parse_result_t<ast::number_t> number =
+            (trim_whitespaces(), parse<ast::number_t>());
+        number) {
       return {
           {*number.get_opt()}, number.get_begin_pos(), number.get_end_pos()};
     }
 
     // Symbol parsing attempt
-    if (parse_result_t<ast::symbol_t> symbol = parse<ast::symbol_t>(); symbol) {
+    if (parse_result_t<ast::symbol_t> symbol =
+            (trim_whitespaces(), parse<ast::symbol_t>());
+        symbol) {
       return {
           {*symbol.get_opt()}, symbol.get_begin_pos(), symbol.get_end_pos()};
     }
 
     // Identifier parsing attempt
     if (parse_result_t<ast::identifier_t> identifier =
-            parse<ast::identifier_t>();
+            (trim_whitespaces(), parse<ast::identifier_t>());
         identifier) {
       return {{*identifier.get_opt()},
               identifier.get_begin_pos(),
@@ -312,6 +320,7 @@ public:
     }
 
     // Failure
+    backtrack(begin);
     return {};
   }
 
@@ -319,15 +328,16 @@ public:
   // text = '"' [^"]* '"'
 
   template <> constexpr parse_result_t<ast::text_t> parse<ast::text_t>() {
-    utils::trace("text_t");
+    parse_trace("text = '\"' [^\"]* '\"'");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // TODO
 
-    if (!parse_char('\"'))
+    if (!(trim_whitespaces(), parse_char('\"'))) {
+      backtrack(begin);
       return {};
+    }
 
     backtrack(begin);
     return {};
@@ -338,15 +348,16 @@ public:
 
   template <>
   constexpr parse_result_t<ast::binary_op_t> parse<ast::binary_op_t>() {
-    utils::trace("binary_op_t");
+    parse_trace("binary_op = 'frac' | 'root' | 'stackrel'");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     parse_result_t<std::size_t> binop_pr =
-        parse_symbol_by_kind<symbols::symbol_kind_t::binary_v>();
+        (trim_whitespaces(),
+         parse_symbol_by_kind<symbols::symbol_kind_t::binary_v>());
 
     if (!binop_pr) {
+      backtrack(begin);
       return {};
     }
 
@@ -358,26 +369,31 @@ public:
 
   template <>
   constexpr parse_result_t<ast::binary_expr_t> parse<ast::binary_expr_t>() {
-    utils::trace("binary_expr_t");
+    parse_trace("binary_expr = binary_op simp simp");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // Binop parsing attempt
-    parse_result_t<ast::binary_op_t> binop_pr = parse<ast::binary_op_t>();
+    parse_result_t<ast::binary_op_t> binop_pr =
+        (trim_whitespaces(), parse<ast::binary_op_t>());
     if (!binop_pr) {
+      backtrack(begin);
       return {};
     }
 
     // Simp parsing attempt
-    parse_result_t<ast::simp_t> simp_pr_a = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr_a =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr_a) {
+      backtrack(begin);
       return {};
     }
 
     // Simp parsing attempt
-    parse_result_t<ast::simp_t> simp_pr_b = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr_b =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr_b) {
+      backtrack(begin);
       return {};
     }
 
@@ -393,10 +409,11 @@ public:
 
   template <>
   constexpr parse_result_t<ast::unary_op_t> parse<ast::unary_op_t>() {
-    utils::trace("unary_op_t");
+    parse_trace("unary_op = 'sqrt' | 'text'");
 
     if (parse_result_t<std::size_t> pr =
-            parse_symbol_by_kind<symbols::symbol_kind_t::unary_v>();
+            (trim_whitespaces(),
+             parse_symbol_by_kind<symbols::symbol_kind_t::unary_v>());
         pr) {
       return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
@@ -409,39 +426,41 @@ public:
 
   template <>
   constexpr parse_result_t<ast::unary_expr_t> parse<ast::unary_expr_t>() {
-    utils::trace("unary_expr_t");
+    parse_trace("unary_expr = unary_op simp");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // Unary op parsing attempt
-    parse_result_t<ast::unary_op_t> op_pr = parse<ast::unary_op_t>();
+    parse_result_t<ast::unary_op_t> op_pr =
+        (trim_whitespaces(), parse<ast::unary_op_t>());
     if (!op_pr) {
       backtrack(begin);
       return {};
     }
 
     // Simp parsing attempt
-    parse_result_t<ast::simp_t> simp_pr = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr) {
       backtrack(begin);
       return {};
     }
 
-    // TODO
-    return {};
+    return {{op_pr.get_opt().value(),
+             cest::make_unique<ast::simp_t>(std::move(*simp_pr.get_opt()))},
+            begin,
+            get_pos()};
   }
 
   //----------------------------------------------------------------------------
   // rparen = ')' | ']' | '}' | ':)' | ':}'
 
   template <> constexpr parse_result_t<ast::rparen_t> parse<ast::rparen_t>() {
-    utils::trace("rparen_t");
-
-    trim_whitespaces();
+    parse_trace("rparen = ')' | ']' | '}' | ':)' | ':}'");
 
     if (parse_result_t<std::size_t> pr =
-            parse_symbol_by_kind<symbols::rightbracket_v>();
+            (trim_whitespaces(),
+             parse_symbol_by_kind<symbols::rightbracket_v>());
         pr) {
       return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
@@ -452,12 +471,11 @@ public:
   // lparen = '(' | '[' | '{' | '(:' | '{:'
 
   template <> constexpr parse_result_t<ast::lparen_t> parse<ast::lparen_t>() {
-    utils::trace("lparen_t");
-
-    trim_whitespaces();
+    parse_trace("lparen = '(' | '[' | '{' | '(:' | '{:'");
 
     if (parse_result_t<std::size_t> pr =
-            parse_symbol_by_kind<symbols::leftbracket_v>();
+            (trim_whitespaces(),
+             parse_symbol_by_kind<symbols::leftbracket_v>());
         pr) {
       return {{*pr.get_opt()}, pr.get_begin_pos(), pr.get_end_pos()};
     }
@@ -469,24 +487,26 @@ public:
 
   template <>
   constexpr parse_result_t<ast::paren_expr_t> parse<ast::paren_expr_t>() {
-    utils::trace("paren_expr_t");
+    parse_trace("paren_expr = lparen expr rparen");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
-    parse_result_t<ast::lparen_t> lparen_pr = parse<ast::lparen_t>();
+    parse_result_t<ast::lparen_t> lparen_pr =
+        (trim_whitespaces(), parse<ast::lparen_t>());
     if (!lparen_pr) {
       backtrack(begin);
       return {};
     }
 
-    parse_result_t<ast::expr_t> expr_pr = parse<ast::expr_t>();
+    parse_result_t<ast::expr_t> expr_pr =
+        (trim_whitespaces(), parse<ast::expr_t>());
     if (!expr_pr) {
       backtrack(begin);
       return {};
     }
 
-    parse_result_t<ast::rparen_t> rparen_pr = parse<ast::rparen_t>();
+    parse_result_t<ast::rparen_t> rparen_pr =
+        (trim_whitespaces(), parse<ast::rparen_t>());
     if (!rparen_pr) {
       backtrack(begin);
       return {};
@@ -503,23 +523,23 @@ public:
   // sub =  '_' simp super?
 
   template <> constexpr parse_result_t<ast::sub_t> parse<ast::sub_t>() {
-    utils::trace("sub_t");
+    parse_trace("sub =  '_' simp super?");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
-    if (!parse_char('_')) {
+    if (!(trim_whitespaces(), parse_char('_'))) {
       return {};
     }
 
-    parse_result_t<ast::simp_t> simp_pr = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr) {
       backtrack(begin);
       return {};
     }
 
-    std::size_t const super_begin = get_pos();
-    parse_result_t<ast::super_t> super_pr = parse<ast::super_t>();
+    parse_result_t<ast::super_t> super_pr =
+        (trim_whitespaces(), parse<ast::super_t>());
 
     if (super_pr) {
       return {{cest::make_unique<ast::simp_t>(std::move(*simp_pr.get_opt())),
@@ -528,7 +548,6 @@ public:
               get_pos()};
     }
 
-    backtrack(super_begin);
     return {{cest::make_unique<ast::simp_t>(std::move(*simp_pr.get_opt())),
              std::nullopt},
             begin,
@@ -539,18 +558,19 @@ public:
   // super = '^' simp
 
   template <> constexpr parse_result_t<ast::super_t> parse<ast::super_t>() {
-    utils::trace("super_t");
+    parse_trace("super = '^' simp");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // Checking for first char being a hat
-    if (!parse_char('^')) {
+    if (!(trim_whitespaces(), parse_char('^'))) {
+      backtrack(begin);
       return {};
     }
 
     // Parse simp
-    parse_result_t<ast::simp_t> simp_pr = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr) {
       backtrack(begin);
       return {};
@@ -566,18 +586,19 @@ public:
 
   template <>
   constexpr parse_result_t<ast::fraction_t> parse<ast::fraction_t>() {
-    utils::trace("fraction_t");
+    parse_trace("fraction = '/' simp");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // Checking for first char being a slash
-    if (parse_char('/')) {
+    if (!(trim_whitespaces(), parse_char('/'))) {
+      backtrack(begin);
       return {};
     }
 
     // Parse simp
-    parse_result_t<ast::simp_t> simp_pr = parse<ast::simp_t>();
+    parse_result_t<ast::simp_t> simp_pr =
+        (trim_whitespaces(), parse<ast::simp_t>());
     if (!simp_pr) {
       backtrack(begin);
       return {};
@@ -592,34 +613,43 @@ public:
   // simp = constant | paren_expr | unary_expr | binary_expr | text
 
   template <> constexpr parse_result_t<ast::simp_t> parse<ast::simp_t>() {
-    utils::trace("simp_t");
+    parse_trace(
+        "simp = constant | paren_expr | unary_expr | binary_expr | text");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
     // Constant parsing attempt
-    if (parse_result_t<ast::constant_t> pr = parse<ast::constant_t>(); pr) {
+    if (parse_result_t<ast::constant_t> pr =
+            (trim_whitespaces(), parse<ast::constant_t>());
+        pr) {
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
     // Paren expr parsing attempt
-    if (parse_result_t<ast::paren_expr_t> pr = parse<ast::paren_expr_t>(); pr) {
+    if (parse_result_t<ast::paren_expr_t> pr =
+            (trim_whitespaces(), parse<ast::paren_expr_t>());
+        pr) {
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
     // Unary expr parsing attempt
-    if (parse_result_t<ast::unary_expr_t> pr = parse<ast::unary_expr_t>(); pr) {
+    if (parse_result_t<ast::unary_expr_t> pr =
+            (trim_whitespaces(), parse<ast::unary_expr_t>());
+        pr) {
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
     // Binary expr parsing attempt
-    if (parse_result_t<ast::binary_expr_t> pr = parse<ast::binary_expr_t>();
+    if (parse_result_t<ast::binary_expr_t> pr =
+            (trim_whitespaces(), parse<ast::binary_expr_t>());
         pr) {
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
     // Text parsing attempt
-    if (parse_result_t<ast::text_t> pr = parse<ast::text_t>(); pr) {
+    if (parse_result_t<ast::text_t> pr =
+            (trim_whitespaces(), parse<ast::text_t>());
+        pr) {
       return {{std::move(*pr.get_opt())}, begin, get_pos()};
     }
 
@@ -631,43 +661,53 @@ public:
   // expr = ( simp ( fraction | sub | super ) )+
 
   template <> constexpr parse_result_t<ast::expr_t> parse<ast::expr_t>() {
-    utils::trace("expr_t");
+    parse_trace("expr = ( simp ( fraction | sub | super ) )+");
 
-    trim_whitespaces();
     std::size_t const begin = get_pos();
 
-    ast::expr_t expr;
+    ast::expr_t result;
+
+    trim_whitespaces();
     for (parse_result_t<ast::simp_t> simp_pr = parse<ast::simp_t>(); simp_pr;
-         simp_pr = parse<ast::simp_t>()) {
+         simp_pr = (trim_whitespaces(), parse<ast::simp_t>())) {
+
+      ast::expr_element_t element;
+
+      element.simp_ptr =
+          cest::make_unique<ast::simp_t>(std::move(*simp_pr.get_opt()));
+
       // Attempting to parse a fraction
-      if (parse_result_t<ast::fraction_t> pr = parse<ast::fraction_t>(); pr) {
-        expr.content.emplace_back(ast::expr_t::element_t{
-            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
-        continue;
+      if (parse_result_t<ast::fraction_t> pr =
+              (trim_whitespaces(), parse<ast::fraction_t>());
+          pr) {
+        element.next = std::move(*pr.get_opt());
+        result.content.push_back(std::move(element));
       }
 
       // Attempting to parse a sub
-      if (parse_result_t<ast::sub_t> pr = parse<ast::sub_t>(); pr) {
-        expr.content.emplace_back(ast::expr_t::element_t{
-            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
-        continue;
+      else if (parse_result_t<ast::sub_t> pr =
+                   (trim_whitespaces(), parse<ast::sub_t>());
+               pr) {
+        element.next = std::move(*pr.get_opt());
+        result.content.push_back(std::move(element));
       }
 
       // Attempting to parse a super
-      if (parse_result_t<ast::super_t> pr = parse<ast::super_t>(); pr) {
-        expr.content.emplace_back(ast::expr_t::element_t{
-            std::move(*simp_pr.get_opt()), std::move(*pr.get_opt())});
-        continue;
+      else if (parse_result_t<ast::super_t> pr =
+                   (trim_whitespaces(), parse<ast::super_t>());
+               pr) {
+        element.next = std::move(*pr.get_opt());
+        result.content.push_back(std::move(element));
       }
     }
 
     // Failure if empty.
-    if (expr.content.empty()) {
+    if (result.content.empty()) {
       backtrack(begin);
       return {};
     }
 
-    return {std::move(expr), begin, get_pos()};
+    return {std::move(result), begin, get_pos()};
   }
 };
 

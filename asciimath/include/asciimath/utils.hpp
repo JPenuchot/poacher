@@ -165,4 +165,10 @@ constexpr std::string print(ast::expr_t const &expr, std::size_t indent = 0,
   return {};
 }
 
+/// Overload utility meta-structure
+template <typename... Fs> struct overload_t : Fs... {
+  constexpr overload_t(Fs... fs) : Fs(std::move(fs))... {}
+  using Fs::operator()...;
+};
+
 } // namespace asciimath::utils
