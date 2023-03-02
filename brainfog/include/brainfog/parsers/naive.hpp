@@ -9,7 +9,7 @@
 
 namespace brainfog::naive_parser {
 
-namespace detail {
+namespace impl {
 //------------------------------------------------------------------------------
 // PARSING
 
@@ -23,60 +23,51 @@ constexpr token_vec_t lex_tokens(cest::string const &input) {
   return result;
 }
 
-/// Parses a block of BF code
-constexpr ast_block_t parse_block(token_vec_t::const_iterator parse_begin,
-                                  token_vec_t::const_iterator parse_end) {
+/// Parses a block of BF code, then returns an iterator to the last parsed token
+/// or parse_end if the parser has parsed all the tokens.
+constexpr std::tuple<ast_block_t, token_vec_t::const_iterator>
+parse_block(token_vec_t::const_iterator parse_begin,
+            token_vec_t::const_iterator parse_end) {
   using input_it_t = token_vec_t::const_iterator;
 
-  ast_node_vec_t ast_vec;
+  ast_node_vec_t block_content;
 
   for (; parse_begin != parse_end; parse_begin++) {
-    // parse tokens until while block beginning
-    if (*parse_begin == nop_v)
-      continue;
-
-    // NOTE: While block parsing could be largely improved by adding a specific
-    // function for while block parsing, that finds the while block end *and*
-    // parses token at the same time.
-    if (*parse_begin == while_begin_v) {
-      parse_begin++; // enter while block
-
-      // Find block end
-      input_it_t while_end = parse_begin;
-      for (unsigned block_depth = 1;
-           while_end != parse_end &&
-           (block_depth +=
-            (*while_end == while_begin_v) - (*while_end == while_end_v)) > 0;
-           while_end++)
-        ;
-
-      // Check for unmatched while begin
-      if (while_end == parse_end) {
-        cest::cout << "Unmatched while begin\n";
-        std::exit(1);
-      }
-
-      // parse while content
-      ast_vec.push_back(
-          cest::make_unique<ast_while_t>(parse_block(parse_begin, while_end)));
-
-      parse_begin = while_end; // commit
-      continue;                // exit while
+    // While end bracket: return block content and while block end position
+    if (*parse_begin == while_end_v) {
+      return {std::move(block_content), parse_begin};
     }
 
-    ast_vec.push_back(
-        ast_node_ptr_t(cest::make_unique<ast_token_t>(*parse_begin)));
+    // While begin bracket: recurse,
+    // then continue parsing from the end of the block
+    else if (*parse_begin == while_begin_v) {
+      // Parse while body
+      auto [while_block_content, while_block_end] =
+          parse_block(parse_begin + 1, parse_end);
+
+      block_content.push_back(
+          cest::make_unique<ast_while_t>(std::move(while_block_content)));
+
+      parse_begin = while_block_end;
+    }
+
+    // Any other token that is not a nop instruction: add it to the AST
+    else if (*parse_begin != nop_v) {
+      block_content.push_back(
+          ast_node_ptr_t(cest::make_unique<ast_token_t>(*parse_begin)));
+    }
   }
 
-  return ast_block_t(std::move(ast_vec));
+  return {ast_block_t(std::move(block_content)), parse_end};
 }
 
-} // namespace detail
+} // namespace impl
 
+/// Driver function for the token parser
 constexpr ast_node_ptr_t parse_ast(cest::string const &input) {
-  auto const tok = detail::lex_tokens(input);
-  return cest::make_unique<ast_block_t>(
-      detail::parse_block(tok.cbegin(), tok.cend()));
+  auto const tok = impl::lex_tokens(input);
+  auto [block, end] = impl::parse_block(tok.cbegin(), tok.cend());
+  return cest::make_unique<ast_block_t>(std::move(block));
 }
 
 } // namespace brainfog::naive_parser
