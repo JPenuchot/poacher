@@ -11,21 +11,21 @@ namespace brainfog {
 /// Represents a Brainfuck token.
 enum token_t : char {
   /// ++ptr;
-  fwd_v = '>',
+  pointer_increase_v = '>',
   /// --ptr;
-  bwd_v = '<',
+  pointer_decrease_v = '<',
   /// ++*ptr;
-  inc_v = '+',
+  pointee_increase_v = '+',
   /// --*ptr;
-  dec_v = '-',
+  pointee_decrease_v = '-',
   /// putchar(*ptr);
   put_v = '.',
   /// *ptr=getchar();
   get_v = ',',
   /// while (*ptr) {
-  whb_v = '[',
+  while_begin_v = '[',
   /// }
-  whe_v = ']',
+  while_end_v = ']',
   /// nop
   nop_v,
 };
@@ -33,22 +33,22 @@ enum token_t : char {
 /// Converts a char into its corresponding Brainfuck token_t value.
 constexpr enum token_t to_token(char c) {
   switch (c) {
-  case fwd_v:
-    return fwd_v;
-  case bwd_v:
-    return bwd_v;
-  case inc_v:
-    return inc_v;
-  case dec_v:
-    return dec_v;
+  case pointer_increase_v:
+    return pointer_increase_v;
+  case pointer_decrease_v:
+    return pointer_decrease_v;
+  case pointee_increase_v:
+    return pointee_increase_v;
+  case pointee_decrease_v:
+    return pointee_decrease_v;
   case put_v:
     return put_v;
   case get_v:
     return get_v;
-  case whb_v:
-    return whb_v;
-  case whe_v:
-    return whe_v;
+  case while_begin_v:
+    return while_begin_v;
+  case while_end_v:
+    return while_end_v;
   }
   return nop_v;
 }

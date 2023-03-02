@@ -13,50 +13,59 @@ namespace detail {
 //------------------------------------------------------------------------------
 // PARSING
 
+/// Converts a string into a list of BF tokens
 constexpr token_vec_t lex_tokens(cest::string const &input) {
-  token_vec_t vec;
-  vec.reserve(input.size());
-  std::transform(input.begin(), input.end(), std::back_inserter(vec),
-                 [](auto c) { return to_token(c); });
-  return vec;
+  token_vec_t result;
+  result.reserve(input.size());
+  std::transform(
+      input.begin(), input.end(), std::back_inserter(result),
+      [](auto current_character) { return to_token(current_character); });
+  return result;
 }
 
-constexpr ast_block_t parse_block(token_vec_t::const_iterator begin,
-                                  token_vec_t::const_iterator end) {
+/// Parses a block of BF code
+constexpr ast_block_t parse_block(token_vec_t::const_iterator parse_begin,
+                                  token_vec_t::const_iterator parse_end) {
   using input_it_t = token_vec_t::const_iterator;
 
   ast_node_vec_t ast_vec;
 
-  for (; begin != end; begin++) {
+  for (; parse_begin != parse_end; parse_begin++) {
     // parse tokens until while block beginning
-    if (*begin == nop_v)
+    if (*parse_begin == nop_v)
       continue;
 
-    if (*begin == whb_v) {
-      begin++; // enter while block
+    // NOTE: While block parsing could be largely improved by adding a specific
+    // function for while block parsing, that finds the while block end *and*
+    // parses token at the same time.
+    if (*parse_begin == while_begin_v) {
+      parse_begin++; // enter while block
 
-      // find block end
-      input_it_t w_end = begin;
-      for (unsigned l = 1;
-           w_end != end && (l += (*w_end == whb_v) - (*w_end == whe_v));
-           w_end++)
+      // Find block end
+      input_it_t while_end = parse_begin;
+      for (unsigned block_depth = 1;
+           while_end != parse_end &&
+           (block_depth +=
+            (*while_end == while_begin_v) - (*while_end == while_end_v)) > 0;
+           while_end++)
         ;
 
       // Check for unmatched while begin
-      if (w_end == end) {
+      if (while_end == parse_end) {
         cest::cout << "Unmatched while begin\n";
-        return ast_block_t(std::move(ast_vec));
+        std::exit(1);
       }
 
       // parse while content
       ast_vec.push_back(
-          cest::make_unique<ast_while_t>(parse_block(begin, w_end)));
+          cest::make_unique<ast_while_t>(parse_block(parse_begin, while_end)));
 
-      begin = w_end; // commit
-      continue;      // exit while
+      parse_begin = while_end; // commit
+      continue;                // exit while
     }
 
-    ast_vec.push_back(ast_node_ptr_t(cest::make_unique<ast_token_t>(*begin)));
+    ast_vec.push_back(
+        ast_node_ptr_t(cest::make_unique<ast_token_t>(*parse_begin)));
   }
 
   return ast_block_t(std::move(ast_vec));

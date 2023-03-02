@@ -79,13 +79,17 @@ inline void run(et_while_t<Ts...>, program_state_t &s) {
     (run(Ts{}, s), ...);
 }
 
-inline void run(et_token_t<fwd_v>, program_state_t &s) { ++s.i; }
+inline void run(et_token_t<pointer_increase_v>, program_state_t &s) { ++s.i; }
 
-inline void run(et_token_t<bwd_v>, program_state_t &s) { --s.i; }
+inline void run(et_token_t<pointer_decrease_v>, program_state_t &s) { --s.i; }
 
-inline void run(et_token_t<inc_v>, program_state_t &s) { s.data[s.i]++; }
+inline void run(et_token_t<pointee_increase_v>, program_state_t &s) {
+  s.data[s.i]++;
+}
 
-inline void run(et_token_t<dec_v>, program_state_t &s) { s.data[s.i]--; }
+inline void run(et_token_t<pointee_decrease_v>, program_state_t &s) {
+  s.data[s.i]--;
+}
 
 inline void run(et_token_t<put_v>, program_state_t &s) {
   std::cout.put(s.data[s.i]);

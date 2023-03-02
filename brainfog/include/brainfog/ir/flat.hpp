@@ -150,13 +150,13 @@ void run(program_state_t &s) {
   if constexpr (std::holds_alternative<flat_token_t>(Instr)) {
     constexpr flat_token_t const &Token = std::get<flat_token_t>(Instr);
 
-    if constexpr (Token.token == fwd_v) {
+    if constexpr (Token.token == pointer_increase_v) {
       ++s.i;
-    } else if constexpr (Token.token == bwd_v) {
+    } else if constexpr (Token.token == pointer_decrease_v) {
       --s.i;
-    } else if constexpr (Token.token == inc_v) {
+    } else if constexpr (Token.token == pointee_increase_v) {
       s.data[s.i]++;
-    } else if constexpr (Token.token == dec_v) {
+    } else if constexpr (Token.token == pointee_decrease_v) {
       s.data[s.i]--;
     } else if constexpr (Token.token == put_v) {
       std::putchar(s.data[s.i]);
