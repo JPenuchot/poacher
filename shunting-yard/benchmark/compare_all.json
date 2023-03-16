@@ -5,7 +5,7 @@
   "y_label": "Time (µs)",
   "draw_average": true,
   "demangle": false,
-  "draw_points": false,
+  "draw_points": true,
   "width": 800,
   "height": 400,
   "key_ptrs": ["/name", "/args/detail"],
