@@ -32,3 +32,8 @@ template <typename T = void> inline auto text_formula() {
 
 static_assert(
     std::is_same_v<decltype(blaze_expression()), decltype(text_formula())>);
+
+void foo() {
+  blaze_expression();
+  text_formula();
+}

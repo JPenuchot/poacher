@@ -16,3 +16,5 @@ template <typename T = void> inline auto bench_me() {
 
   return res;
 }
+
+void foo() { bench_me(); }
