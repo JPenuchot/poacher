@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cest/memory.hpp>
+#include <memory>
 #include <vector>
 
 namespace brainfog {
@@ -93,7 +93,7 @@ template <typename Child> struct make_visitable_t {
 using token_vec_t = std::vector<token_t>;
 
 /// AST node pointer helper type
-using ast_node_ptr_t = cest::unique_ptr<node_interface_t>;
+using ast_node_ptr_t = std::unique_ptr<node_interface_t>;
 
 /// AST node vector helper type
 using ast_node_vec_t = std::vector<ast_node_ptr_t>;
@@ -170,14 +170,14 @@ template <typename T, typename U> constexpr bool isa(U const *p) {
 }
 
 template <typename T, typename U>
-constexpr bool isa(cest::unique_ptr<U> const &p) {
+constexpr bool isa(std::unique_ptr<U> const &p) {
   return isa<T>(*p);
 }
 
 /// Casts a given pointer to the specified type if it matches() its kind tag,
 /// otherwise returns nullptr.
 template <typename T, typename U>
-constexpr T *getas(cest::unique_ptr<U> const &p) {
+constexpr T *getas(std::unique_ptr<U> const &p) {
   return isa<T>(p) ? static_cast<T *>(p.get()) : nullptr;
 }
 

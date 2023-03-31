@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "brainfog/ir/expression_template.hpp"
-#include "brainfog/ir/flat.hpp"
+#include "brainfog/backends/expression_template.hpp"
+#include "brainfog/backends/flat.hpp"
 #include "brainfog/parsers/naive.hpp"
 #include "brainfog/program.hpp"
 

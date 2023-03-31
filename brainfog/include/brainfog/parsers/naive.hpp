@@ -2,19 +2,18 @@
 
 #include <algorithm>
 
-#include <cest/memory.hpp>
-#include <cest/string.hpp>
+#include <memory>
+#include <string>
 
 #include <brainfog/ast.hpp>
 
 namespace brainfog::naive_parser {
 
+/// Parser implementation
 namespace impl {
-//------------------------------------------------------------------------------
-// PARSING
 
 /// Converts a string into a list of BF tokens
-constexpr token_vec_t lex_tokens(cest::string const &input) {
+constexpr token_vec_t lex_tokens(std::string const &input) {
   token_vec_t result;
   result.reserve(input.size());
   std::transform(
@@ -23,8 +22,9 @@ constexpr token_vec_t lex_tokens(cest::string const &input) {
   return result;
 }
 
-/// Parses a block of BF code, then returns an iterator to the last parsed token
-/// or parse_end if the parser has parsed all the tokens.
+/// Parses BF code until the end of the block (or the end of the formula, ie.
+/// parse_end), then returns an iterator to the last parsed token or parse_end
+/// if the parser has parsed all the tokens.
 constexpr std::tuple<ast_block_t, token_vec_t::const_iterator>
 parse_block(token_vec_t::const_iterator parse_begin,
             token_vec_t::const_iterator parse_end) {
@@ -46,7 +46,7 @@ parse_block(token_vec_t::const_iterator parse_begin,
           parse_block(parse_begin + 1, parse_end);
 
       block_content.push_back(
-          cest::make_unique<ast_while_t>(std::move(while_block_content)));
+          std::make_unique<ast_while_t>(std::move(while_block_content)));
 
       parse_begin = while_block_end;
     }
@@ -54,7 +54,7 @@ parse_block(token_vec_t::const_iterator parse_begin,
     // Any other token that is not a nop instruction: add it to the AST
     else if (*parse_begin != nop_v) {
       block_content.push_back(
-          ast_node_ptr_t(cest::make_unique<ast_token_t>(*parse_begin)));
+          ast_node_ptr_t(std::make_unique<ast_token_t>(*parse_begin)));
     }
   }
 
@@ -64,10 +64,10 @@ parse_block(token_vec_t::const_iterator parse_begin,
 } // namespace impl
 
 /// Driver function for the token parser
-constexpr ast_node_ptr_t parse_ast(cest::string const &input) {
+constexpr ast_node_ptr_t parse_ast(std::string const &input) {
   auto const tok = impl::lex_tokens(input);
   auto [block, end] = impl::parse_block(tok.cbegin(), tok.cend());
-  return cest::make_unique<ast_block_t>(std::move(block));
+  return std::make_unique<ast_block_t>(std::move(block));
 }
 
 } // namespace brainfog::naive_parser
