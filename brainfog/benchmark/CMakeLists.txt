@@ -52,15 +52,15 @@ ctbench_add_benchmark(bfbench-imbricated_loops-pass_by_generator-clang-tt imbric
 
 # Hello World
 
-ctbench_add_graph(bfbench-hello_world-clang-tt compare_all.json
-                  bfbench-hello_world-et-clang-tt
-                  bfbench-hello_world-flat-clang-tt
-                  bfbench-hello_world-pass_by_generator-clang-tt)
+# ctbench_add_graph(bfbench-hello_world-clang-tt compare_all.json
+#                   bfbench-hello_world-et-clang-tt
+#                   bfbench-hello_world-flat-clang-tt
+#                   bfbench-hello_world-pass_by_generator-clang-tt)
 
-ctbench_add_graph(bfbench-hello_world compare_all.json
-                  bfbench-hello_world-et-clang
-                  bfbench-hello_world-flat-clang
-                  bfbench-hello_world-pass_by_generator-clang)
+# ctbench_add_graph(bfbench-hello_world compare_all.json
+#                   bfbench-hello_world-et-clang
+#                   bfbench-hello_world-flat-clang
+#                   bfbench-hello_world-pass_by_generator-clang)
 
 # Consecutive
 
