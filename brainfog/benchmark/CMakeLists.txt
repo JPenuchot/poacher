@@ -36,9 +36,9 @@ ctbench_add_benchmark(bfbench-imbricated_loops-pass_by_generator-clang imbricate
 ctbench_set_compiler(clang++)
 add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 
-ctbench_add_benchmark(bfbench-hello_world-flat-clang-tt hello_world/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-hello_world-et-clang-tt hello_world/et.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-hello_world-pass_by_generator-clang-tt hello_world/pass_by_generator.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+# ctbench_add_benchmark(bfbench-hello_world-flat-clang-tt hello_world/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
+# ctbench_add_benchmark(bfbench-hello_world-et-clang-tt hello_world/et.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+# ctbench_add_benchmark(bfbench-hello_world-pass_by_generator-clang-tt hello_world/pass_by_generator.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
 
 ctbench_add_benchmark(bfbench-consecutive_loops-flat-clang-tt consecutive_loops/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
 ctbench_add_benchmark(bfbench-consecutive_loops-et-clang-tt consecutive_loops/et.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
