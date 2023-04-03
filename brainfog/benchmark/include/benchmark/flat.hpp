@@ -1,6 +1,6 @@
 #pragma once
 
-#include <brainfog/ir/flat.hpp>
+#include <brainfog/backends/flat.hpp>
 #include <brainfog/parsers/naive.hpp>
 
 /// Parse program to flat AST
