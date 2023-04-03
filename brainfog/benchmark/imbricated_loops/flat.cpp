@@ -8,4 +8,5 @@ constexpr char const *program_string =
     BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING, "[")
         BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING, "+]+");
 
-void foo() { run_program<program_string>(); }
+template <typename T = void> inline void bench_me() { run_program<program_string>(); }
+void foo() { bench_me(); }
