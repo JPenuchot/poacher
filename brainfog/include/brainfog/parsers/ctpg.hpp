@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include "brainfog/ast.hpp"
 
 #include <cest/memory.hpp>
@@ -97,4 +97,4 @@ constexpr ast_node_ptr_t parse_ast(char const *program_string) {
   return cest::make_unique<ast_block_t>(ast_node_vec_t{});
 }
 
-} // namespace brainfog::ctpg_parser
+} // namespace brainfog::ctpg_parser*/
