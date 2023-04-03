@@ -33,6 +33,6 @@ add_compile_options(
 add_executable(shunting-yard ${SOURCES})
 target_include_directories(shunting-yard PUBLIC include)
 
-include(cmake/docs.cmake)
+# include(cmake/docs.cmake)
 
 add_subdirectory(benchmark)
