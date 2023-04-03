@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(brainfog)
 
-find_package(ctpg REQUIRED)
+# find_package(ctpg REQUIRED)
 
 set(COMPILE_BENCHMARKS
     OFF
