@@ -8,8 +8,8 @@ set(BF_BENCH_SAMPLES 10 CACHE STRING "Benchmark iterations per size")
 
 # Parameters specific to ET backend benchmarks
 # These parameters were added to ensure benchmarks didn't take a decade to run.
-set(BF_SLOW_BENCH_END 20 CACHE STRING "Benchmark size end for slow backends")
-set(BF_SLOW_BENCH_STEP 5 CACHE STRING "Benchmark size step for slow backends")
+set(BF_SLOW_BENCH_END 100 CACHE STRING "Benchmark size end for slow backends")
+set(BF_SLOW_BENCH_STEP 10 CACHE STRING "Benchmark size step for slow backends")
 set(BF_SLOW_BENCH_SAMPLES 10 CACHE STRING "Benchmark iterations per size for slow backends")
 # set(BF_SLOW_HELLOWORLD_END 2 CACHE STRING "Hello World benchmark size end for slow backends")
 
