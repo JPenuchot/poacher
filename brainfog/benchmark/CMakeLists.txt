@@ -13,7 +13,7 @@ include_directories(include)
 
 # Clang
 # ctbench_set_compiler(clang++)
-add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647)
+add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647 -fconstexpr-depth=128)
 
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-flat-clang
