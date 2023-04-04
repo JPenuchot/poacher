@@ -26,6 +26,7 @@ template <auto Generator> constexpr auto vector_codegen() {
   // Getting size as a constexpr value
   constexpr std::size_t Size = Generator().size();
 
+  // Compile-time unrolling
   return [](program_state_t &state) {
     [&]<std::size_t... Indexes>(std::index_sequence<Indexes...>) {
       (codegen<[]() constexpr { return std::move(Generator()[Indexes]); }>()(
