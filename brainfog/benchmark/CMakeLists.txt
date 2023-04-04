@@ -1,17 +1,12 @@
 find_package(ctbench REQUIRED)
 
 # General benchmark parameters
-set(BF_BENCH_BEGIN 1 CACHE STRING "Benchmark size begin")
-set(BF_BENCH_END 100 CACHE STRING "Benchmark size end")
-set(BF_BENCH_STEP 5 CACHE STRING "Benchmark size step")
-set(BF_BENCH_SAMPLES 10 CACHE STRING "Benchmark iterations per size")
+set(BF_XS_RANGE "1;3;1" CACHE STRING "Extra small range of benchmarks")
+set(BF_S_RANGE "1;5;1" CACHE STRING "Small range of benchmarks")
+set(BF_M_RANGE "1;50;5" CACHE STRING "Medium range of benchmarks")
+set(BF_L_RANGE "1;100;10" CACHE STRING "Large range of benchmarks")
 
-# Parameters specific to ET backend benchmarks
-# These parameters were added to ensure benchmarks didn't take a decade to run.
-set(BF_SLOW_BENCH_END 25 CACHE STRING "Benchmark size end for slow backends")
-set(BF_SLOW_BENCH_STEP 10 CACHE STRING "Benchmark size step for slow backends")
-set(BF_SLOW_BENCH_SAMPLES 5 CACHE STRING "Benchmark iterations per size for slow backends")
-# set(BF_SLOW_HELLOWORLD_END 2 CACHE STRING "Hello World benchmark size end for slow backends")
+set(BF_SAMPLES 10 CACHE STRING "Number of samples per benchmark")
 
 include_directories(../include)
 include_directories(include)
@@ -20,33 +15,33 @@ include_directories(include)
 # ctbench_set_compiler(clang++)
 add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647)
 
-# ctbench_add_benchmark(bfbench-hello_world-flat-clang hello_world/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-# ctbench_add_benchmark(bfbench-hello_world-et-clang hello_world/et.cpp ${BF_BENCH_BEGIN} 2 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-# ctbench_add_benchmark(bfbench-hello_world-pass_by_generator-clang hello_world/pass_by_generator.cpp ${BF_BENCH_BEGIN} 2 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+# ctbench_add_benchmark_for_range(bfbench-hello_world-flat-clang hello_world/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+# ctbench_add_benchmark_for_range(bfbench-hello_world-et-clang hello_world/et.cpp ${BF_LARGE_BENCH_BEGIN} 2 ${BF_SMALL_BENCH_STEP} ${BF_SAMPLES})
+# ctbench_add_benchmark_for_range(bfbench-hello_world-pass_by_generator-clang hello_world/pass_by_generator.cpp ${BF_LARGE_BENCH_BEGIN} 2 ${BF_SMALL_BENCH_STEP} ${BF_SAMPLES})
 
-ctbench_add_benchmark(bfbench-consecutive_loops-flat-clang consecutive_loops/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-consecutive_loops-et-clang consecutive_loops/et.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-consecutive_loops-pass_by_generator-clang consecutive_loops/pass_by_generator.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-flat-clang consecutive_loops/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-et-clang consecutive_loops/et.cpp ${BF_M_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-pass_by_generator-clang consecutive_loops/pass_by_generator.cpp ${BF_M_RANGE} ${BF_SAMPLES})
 
-ctbench_add_benchmark(bfbench-imbricated_loops-flat-clang imbricated_loops/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-imbricated_loops-et-clang imbricated_loops/et.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-imbricated_loops-pass_by_generator-clang imbricated_loops/pass_by_generator.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-flat-clang imbricated_loops/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-et-clang imbricated_loops/et.cpp ${BF_M_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-pass_by_generator-clang imbricated_loops/pass_by_generator.cpp ${BF_M_RANGE} ${BF_SAMPLES})
 
 # Clang with time-trace enabled
 ctbench_set_compiler(clang++)
 add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 
-# ctbench_add_benchmark(bfbench-hello_world-flat-clang-tt hello_world/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-# ctbench_add_benchmark(bfbench-hello_world-et-clang-tt hello_world/et.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-# ctbench_add_benchmark(bfbench-hello_world-pass_by_generator-clang-tt hello_world/pass_by_generator.cpp ${BF_BENCH_BEGIN} 3 ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-hello_world-flat-clang-tt hello_world/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-hello_world-et-clang-tt hello_world/et.cpp ${BF_XS_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-hello_world-pass_by_generator-clang-tt hello_world/pass_by_generator.cpp ${BF_XS_RANGE} ${BF_SAMPLES})
 
-ctbench_add_benchmark(bfbench-consecutive_loops-flat-clang-tt consecutive_loops/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-consecutive_loops-et-clang-tt consecutive_loops/et.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-consecutive_loops-pass_by_generator-clang-tt consecutive_loops/pass_by_generator.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-flat-clang-tt consecutive_loops/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-et-clang-tt consecutive_loops/et.cpp ${BF_M_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-consecutive_loops-pass_by_generator-clang-tt consecutive_loops/pass_by_generator.cpp ${BF_M_RANGE} ${BF_SAMPLES})
 
-ctbench_add_benchmark(bfbench-imbricated_loops-flat-clang-tt imbricated_loops/flat.cpp ${BF_BENCH_BEGIN} ${BF_BENCH_END} ${BF_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-imbricated_loops-et-clang-tt imbricated_loops/et.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
-ctbench_add_benchmark(bfbench-imbricated_loops-pass_by_generator-clang-tt imbricated_loops/pass_by_generator.cpp ${BF_BENCH_BEGIN} ${BF_SLOW_BENCH_END} ${BF_SLOW_BENCH_STEP} ${BF_BENCH_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-flat-clang-tt imbricated_loops/flat.cpp ${BF_L_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-et-clang-tt imbricated_loops/et.cpp ${BF_M_RANGE} ${BF_SAMPLES})
+ctbench_add_benchmark_for_range(bfbench-imbricated_loops-pass_by_generator-clang-tt imbricated_loops/pass_by_generator.cpp ${BF_M_RANGE} ${BF_SAMPLES})
 
 # Graphs
 
