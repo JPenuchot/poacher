@@ -2,7 +2,7 @@ find_package(ctbench REQUIRED)
 
 # General benchmark parameters
 set(BF_S_RANGE 1 3 1 CACHE STRING "Extra small range of benchmarks")
-set(BF_M_RANGE 1 5 1 CACHE STRING "Small range of benchmarks")
+set(BF_M_RANGE 1 10 1 CACHE STRING "Small range of benchmarks")
 set(BF_L_RANGE 1 50 5 CACHE STRING "Medium range of benchmarks")
 
 set(BF_SAMPLES 10 CACHE STRING "Number of samples per benchmark")
@@ -43,7 +43,7 @@ ctbench_add_benchmark_for_range(
 ctbench_add_benchmark_for_range(
   bfbench-imbricated_loops-flat-clang
   imbricated_loops/flat.cpp
-  BF_L_RANGE ${BF_SAMPLES})
+  BF_M_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-imbricated_loops-et-clang
   imbricated_loops/et.cpp
@@ -86,7 +86,7 @@ ctbench_add_benchmark_for_range(
 ctbench_add_benchmark_for_range(
   bfbench-imbricated_loops-flat-clang-tt
   imbricated_loops/flat.cpp
-  BF_L_RANGE ${BF_SAMPLES})
+  BF_M_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-imbricated_loops-et-clang-tt
   imbricated_loops/et.cpp
