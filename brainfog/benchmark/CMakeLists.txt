@@ -2,14 +2,14 @@ find_package(ctbench REQUIRED)
 
 # General benchmark parameters
 set(BF_BENCH_BEGIN 1 CACHE STRING "Benchmark size begin")
-set(BF_BENCH_END 32 CACHE STRING "Benchmark size end")
-set(BF_BENCH_STEP 1 CACHE STRING "Benchmark size step")
+set(BF_BENCH_END 50 CACHE STRING "Benchmark size end")
+set(BF_BENCH_STEP 5 CACHE STRING "Benchmark size step")
 set(BF_BENCH_SAMPLES 10 CACHE STRING "Benchmark iterations per size")
 
 # Parameters specific to ET backend benchmarks
 # These parameters were added to ensure benchmarks didn't take a decade to run.
 set(BF_SLOW_BENCH_END 10 CACHE STRING "Benchmark size end for slow backends")
-set(BF_SLOW_BENCH_STEP 1 CACHE STRING "Benchmark size step for slow backends")
+set(BF_SLOW_BENCH_STEP 5 CACHE STRING "Benchmark size step for slow backends")
 set(BF_SLOW_BENCH_SAMPLES 10 CACHE STRING "Benchmark iterations per size for slow backends")
 # set(BF_SLOW_HELLOWORLD_END 2 CACHE STRING "Hello World benchmark size end for slow backends")
 
