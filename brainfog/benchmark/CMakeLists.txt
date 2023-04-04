@@ -21,11 +21,11 @@ ctbench_add_benchmark_for_range(
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-et-clang
   hello_world/et.cpp
-  BF_XS_RANGE ${BF_SAMPLES})
+  BF_S_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-pass_by_generator-clang
   hello_world/pass_by_generator.cpp
-  BF_XS_RANGE ${BF_SAMPLES})
+  BF_S_RANGE ${BF_SAMPLES})
 
 ctbench_add_benchmark_for_range(
   bfbench-consecutive_loops-flat-clang
@@ -64,11 +64,11 @@ ctbench_add_benchmark_for_range(
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-et-clang-tt
   hello_world/et.cpp
-  BF_XS_RANGE ${BF_SAMPLES})
+  BF_S_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-pass_by_generator-clang-tt
   hello_world/pass_by_generator.cpp
-  BF_XS_RANGE ${BF_SAMPLES})
+  BF_S_RANGE ${BF_SAMPLES})
 
 ctbench_add_benchmark_for_range(
   bfbench-consecutive_loops-flat-clang-tt
