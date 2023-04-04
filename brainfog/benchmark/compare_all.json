@@ -8,7 +8,7 @@
   "draw_median": false,
   "demangle": false,
   "draw_points": false,
-  "width": 1000,
+  "width": 1200,
   "height": 400,
   "key_ptrs": ["/name", "/args/detail"],
   "_key_ptrs":  ["/name"],
