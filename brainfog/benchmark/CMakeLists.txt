@@ -1,10 +1,9 @@
 find_package(ctbench REQUIRED)
 
 # General benchmark parameters
-set(BF_XS_RANGE 1 3 1 CACHE STRING "Extra small range of benchmarks")
-set(BF_S_RANGE 1 5 1 CACHE STRING "Small range of benchmarks")
-set(BF_M_RANGE 1 50 5 CACHE STRING "Medium range of benchmarks")
-set(BF_L_RANGE 1 100 10 CACHE STRING "Large range of benchmarks")
+set(BF_S_RANGE 1 3 1 CACHE STRING "Extra small range of benchmarks")
+set(BF_M_RANGE 1 5 1 CACHE STRING "Small range of benchmarks")
+set(BF_L_RANGE 1 50 5 CACHE STRING "Medium range of benchmarks")
 
 set(BF_SAMPLES 10 CACHE STRING "Number of samples per benchmark")
 
