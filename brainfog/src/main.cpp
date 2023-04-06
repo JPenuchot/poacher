@@ -4,8 +4,8 @@
 #include <brainfog/program.hpp>
 
 // #define ET
-// #define FLAT
-#define PBG
+#define FLAT
+// #define PBG
 
 #ifdef ET
 #include <brainfog/backends/expression_template.hpp>
@@ -42,12 +42,10 @@ int main() {
 
 #ifdef ET
   { // Expression template backend
-    using IR = decltype(bf::expression_template::to_et(
-        []() { return bf::naive_parser::parse_ast(program_string); }));
-
     bf::program_state_t s;
 
-    bf::expression_template::run(IR{}, s);
+    bf::expression_template::codegen(bf::expression_template::to_et(
+        []() { return bf::naive_parser::parse_ast(program_string); }))(s);
   }
 #endif
 
@@ -55,7 +53,7 @@ int main() {
   { // Flat backend
     static constexpr auto FlatAst = to_flat_ast<program_string>();
     bf::program_state_t s;
-    bf::flat::run<FlatAst>(s);
+    bf::flat::codegen<FlatAst>()(s);
   }
 #endif
 
