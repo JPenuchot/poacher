@@ -38,11 +38,14 @@ struct flat_while_t {
   size_t block_begin;
 };
 
+/// Polymorphic representation of a node
 using flat_node_t =
     std::variant<flat_token_t, flat_block_descriptor_t, flat_while_t>;
 
+/// AST container type
 using flat_ast_t = std::vector<flat_node_t>;
 
+/// NTTP-compatible AST container type
 template <size_t N> using fixed_flat_ast_t = std::array<flat_node_t, N>;
 
 // =============================================================================
@@ -143,10 +146,12 @@ constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
 // =============================================================================
 // Program execution
 
+/// Runs a program contained in a fixed_flat_ast_t container
 template <auto const &Ast, size_t InstructionPos = 0>
 void run(program_state_t &s) {
   constexpr flat_node_t const &Instr = Ast[InstructionPos];
 
+  /// Single instruction
   if constexpr (std::holds_alternative<flat_token_t>(Instr)) {
     constexpr flat_token_t const &Token = std::get<flat_token_t>(Instr);
 
@@ -165,6 +170,7 @@ void run(program_state_t &s) {
     }
   }
 
+  /// Block of code (ie. whole program or while body)
   else if constexpr (std::holds_alternative<flat_block_descriptor_t>(Instr)) {
     constexpr flat_block_descriptor_t const &BlockDescriptor =
         std::get<flat_block_descriptor_t>(Instr);
@@ -175,11 +181,60 @@ void run(program_state_t &s) {
     (std::make_index_sequence<BlockDescriptor.size>{});
   }
 
+  /// While loop
   else if constexpr (std::holds_alternative<flat_while_t>(Instr)) {
     constexpr flat_while_t const &While = std::get<flat_while_t>(Instr);
     while (s.data[s.i]) {
       run<Ast, While.block_begin>(s);
     }
+  }
+}
+
+/// Runs a program contained in a fixed_flat_ast_t container
+template <auto const &Ast, size_t InstructionPos = 0> constexpr auto codegen() {
+  constexpr flat_node_t const &Instr = Ast[InstructionPos];
+
+  /// Single instruction
+  if constexpr (std::holds_alternative<flat_token_t>(Instr)) {
+    constexpr flat_token_t const &Token = std::get<flat_token_t>(Instr);
+
+    if constexpr (Token.token == pointer_increase_v) {
+      return [](program_state_t &s) { ++s.i; };
+    } else if constexpr (Token.token == pointer_decrease_v) {
+      return [](program_state_t &s) { --s.i; };
+    } else if constexpr (Token.token == pointee_increase_v) {
+      return [](program_state_t &s) { s.data[s.i]++; };
+
+    } else if constexpr (Token.token == pointee_decrease_v) {
+      return [](program_state_t &s) { s.data[s.i]--; };
+    } else if constexpr (Token.token == put_v) {
+      return [](program_state_t &s) { std::putchar(s.data[s.i]); };
+    } else if constexpr (Token.token == get_v) {
+      return [](program_state_t &s) { s.data[s.i] = std::getchar(); };
+    }
+  }
+
+  /// Block of code (ie. whole program or while body)
+  else if constexpr (std::holds_alternative<flat_block_descriptor_t>(Instr)) {
+    constexpr flat_block_descriptor_t const &BlockDescriptor =
+        std::get<flat_block_descriptor_t>(Instr);
+    return [](program_state_t &s) {
+      [&]<size_t... InstructionIDs>(std::index_sequence<InstructionIDs...>) {
+        (codegen<Ast, 1 + InstructionPos + InstructionIDs>()(s), ...);
+      }
+      (std::make_index_sequence<BlockDescriptor.size>{});
+    };
+
+  }
+
+  /// While loop
+  else if constexpr (std::holds_alternative<flat_while_t>(Instr)) {
+    constexpr flat_while_t const &While = std::get<flat_while_t>(Instr);
+    return [](program_state_t &s) {
+      while (s.data[s.i]) {
+        codegen<Ast, While.block_begin>()(s);
+      }
+    };
   }
 }
 
