@@ -11,8 +11,9 @@ include_directories(../include)
 include_directories(include)
 
 # Clang
-# ctbench_set_compiler(clang++)
-add_compile_options(-fconstexpr-steps=2147483647 -fbracket-depth=2147483647 -fconstexpr-depth=128)
+
+# IMPORTANT NOTE: imbricated_loops benchmark must not be instantiated at sizes
+# larger than 10 otherwise constexpr evaluation depth stops the compilation.
 
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-flat-clang
