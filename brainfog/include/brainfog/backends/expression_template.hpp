@@ -101,4 +101,45 @@ inline void run(et_token_t<get_v>, program_state_t &s) {
 
 inline void run(et_token_t<nop_v>, program_state_t &s) {}
 
+// codegen meta-function overloads
+
+template <typename... Ts> inline auto codegen(et_block_t<Ts...>) {
+  return [](program_state_t &s) { (codegen(Ts{})(s), ...); };
+}
+
+template <typename... Ts> inline auto codegen(et_while_t<Ts...>) {
+  return [](program_state_t &s) {
+    while (s.data[s.i])
+      (codegen(Ts{})(s), ...);
+  };
+}
+
+inline auto codegen(et_token_t<pointer_increase_v>) {
+  return [](program_state_t &s) { ++s.i; };
+}
+
+inline auto codegen(et_token_t<pointer_decrease_v>) {
+  return [](program_state_t &s) { --s.i; };
+}
+
+inline auto codegen(et_token_t<pointee_increase_v>) {
+  return [](program_state_t &s) { s.data[s.i]++; };
+}
+
+inline auto codegen(et_token_t<pointee_decrease_v>) {
+  return [](program_state_t &s) { s.data[s.i]--; };
+}
+
+inline auto codegen(et_token_t<put_v>) {
+  return [](program_state_t &s) { std::cout.put(s.data[s.i]); };
+}
+
+inline auto codegen(et_token_t<get_v>) {
+  return [](program_state_t &s) { std::cin.get(s.data[s.i]); };
+}
+
+inline auto codegen(et_token_t<nop_v>) {
+  return [](program_state_t &s) {};
+}
+
 } // namespace brainfog::expression_template
