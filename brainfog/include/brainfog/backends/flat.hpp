@@ -53,7 +53,7 @@ template <size_t N> using fixed_flat_ast_t = std::array<flat_node_t, N>;
 // generate_blocks overloads
 
 /// Support structure for generate_blocks function
-struct block_gen_status_t {
+struct block_gen_state_t {
   /// Flat AST blocks, result of block_gen
   std::vector<flat_ast_t> blocks;
 
@@ -65,15 +65,15 @@ struct block_gen_status_t {
 };
 
 /// Extracts an AST into a vector of blocks of contiguous operations
-constexpr void block_gen(ast_node_ptr_t const &, block_gen_status_t &);
+constexpr void block_gen(ast_node_ptr_t const &, block_gen_state_t &);
 
 /// block_gen for a single AST token. Basically just a push_back.
-constexpr void block_gen(ast_token_t const &tok, block_gen_status_t &s) {
+constexpr void block_gen(ast_token_t const &tok, block_gen_state_t &s) {
   s.blocks[s.block_pos].push_back(flat_token_t{tok.get_token()});
 }
 
 /// block_gen for an AST block.
-constexpr void block_gen(ast_block_t const &blo, block_gen_status_t &s) {
+constexpr void block_gen(ast_block_t const &blo, block_gen_state_t &s) {
   // Save & update block pos before adding a block
   size_t const previous_pos = s.block_pos;
   s.block_pos = s.blocks.size();
@@ -97,12 +97,12 @@ constexpr void block_gen(ast_block_t const &blo, block_gen_status_t &s) {
 }
 
 /// block_gen for a while instruction.
-constexpr void block_gen(ast_while_t const &whi, block_gen_status_t &s) {
+constexpr void block_gen(ast_while_t const &whi, block_gen_state_t &s) {
   s.blocks[s.block_pos].push_back(flat_while_t{s.blocks.size()});
   block_gen(whi.get_block(), s);
 }
 
-constexpr void block_gen(ast_node_ptr_t const &p, block_gen_status_t &s) {
+constexpr void block_gen(ast_node_ptr_t const &p, block_gen_state_t &s) {
   visit([&s](auto const &v) { block_gen(v, s); }, p);
 }
 
@@ -110,14 +110,14 @@ constexpr void block_gen(ast_node_ptr_t const &p, block_gen_status_t &s) {
 // flatten implementation
 
 constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
-  flat_ast_t res;
+  flat_ast_t result;
 
   // Extracting as vector of blocks
-  block_gen_status_t bgs;
-  block_gen(p, bgs);
+  block_gen_state_t block_gen_result;
+  block_gen(p, block_gen_result);
 
-  std::vector<flat_ast_t> const &semi_res = bgs.blocks;
-  res.reserve(bgs.total_size);
+  std::vector<flat_ast_t> const &semi_res = block_gen_result.blocks;
+  result.reserve(block_gen_result.total_size);
 
   std::vector<size_t> block_map;
   block_map.reserve(semi_res.size());
@@ -126,22 +126,22 @@ constexpr flat_ast_t flatten(ast_node_ptr_t const &p) {
 
   for (flat_ast_t const &block : semi_res) {
     // Updating block_map
-    block_map.push_back(res.size());
+    block_map.push_back(result.size());
 
     // Flattening instructions
-    std::copy(block.begin(), block.end(), std::back_inserter(res));
+    std::copy(block.begin(), block.end(), std::back_inserter(result));
   }
 
   // Step 2: linking
 
-  for (flat_node_t &n : res) {
-    if (std::holds_alternative<flat_while_t>(n)) {
-      flat_while_t &w_ref = std::get<flat_while_t>(n);
+  for (flat_node_t &current_node : result) {
+    if (std::holds_alternative<flat_while_t>(current_node)) {
+      flat_while_t &w_ref = std::get<flat_while_t>(current_node);
       w_ref.block_begin = block_map[w_ref.block_begin];
     }
   }
 
-  return res;
+  return result;
 }
 
 // =============================================================================
