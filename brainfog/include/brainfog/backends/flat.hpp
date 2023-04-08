@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <brainfog/ast.hpp>
+#include <brainfog/parsers/naive.hpp>
 
 namespace brainfog::flat {
 
@@ -236,6 +237,20 @@ template <auto const &Ast, size_t InstructionPos = 0> constexpr auto codegen() {
       }
     };
   }
+}
+
+/// Parses a BF program into a fixed_flat_ast_t value.
+template <auto const &ProgramString> constexpr auto parse_to_fixed_flat_ast() {
+  // Getting AST vector size into a constexpr variable
+  constexpr size_t AstArraySize =
+      flatten(naive_parser::parse_ast(ProgramString)).size();
+
+  // Initializing static size array
+  fixed_flat_ast_t<AstArraySize> arr;
+  std::ranges::copy(flatten(naive_parser::parse_ast(ProgramString)),
+                    arr.begin());
+
+  return arr;
 }
 
 } // namespace brainfog::flat

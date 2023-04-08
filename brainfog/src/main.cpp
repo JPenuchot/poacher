@@ -21,22 +21,6 @@
 
 static constexpr auto program_string = brainfog::example_programs::hello_world;
 
-#ifdef FLAT
-template <auto const &ProgramString> constexpr auto to_flat_ast() {
-  namespace bf = brainfog;
-
-  constexpr size_t AstArraySize =
-      bf::flat::flatten(bf::naive_parser::parse_ast(ProgramString)).size();
-
-  bf::flat::fixed_flat_ast_t<AstArraySize> arr;
-  std::ranges::copy(
-      bf::flat::flatten(bf::naive_parser::parse_ast(ProgramString)),
-      arr.begin());
-
-  return arr;
-}
-#endif
-
 int main() {
   namespace bf = brainfog;
 
@@ -51,7 +35,8 @@ int main() {
 
 #ifdef FLAT
   { // Flat backend
-    static constexpr auto FlatAst = to_flat_ast<program_string>();
+    static constexpr auto FlatAst =
+        bf::flat::parse_to_fixed_flat_ast<program_string>();
     bf::program_state_t s;
     bf::flat::codegen<FlatAst>()(s);
   }
