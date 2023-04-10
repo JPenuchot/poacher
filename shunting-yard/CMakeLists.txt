@@ -3,7 +3,7 @@ project(shunting-yard-playground)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 set(BUILD_TESTING
     ON

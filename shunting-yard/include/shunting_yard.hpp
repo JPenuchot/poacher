@@ -4,21 +4,17 @@
 // https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
 #include <iterator>
+#include <memory>
 #include <ranges>
 #include <string_view>
 #include <variant>
 #include <vector>
-
-#include <cest/memory.hpp>
 
 #include <kumi/tuple.hpp>
 
 #include <fmt/core.h>
 
 namespace shunting_yard {
-
-/// unique_ptr implementation namespace selector
-namespace unique_ptr_impl = cest;
 
 /// Token kind to match with token types
 enum token_kind_t {
@@ -162,7 +158,7 @@ struct rpn_result_t {
 
   /// Polymorphic buffer for tokens that aren't already held in the
   /// grammar_spec_t object (constants)
-  std::vector<unique_ptr_impl::unique_ptr<token_base_t>> token_memory;
+  std::vector<std::unique_ptr<token_base_t>> token_memory;
 };
 
 /// Literal version for token base type (see token_t)
@@ -317,13 +313,13 @@ parse_token_from_spec_list(std::string_view &formula,
 /// - If not, formula remains unchanged and it will return a failure_t object.
 /// Whitespaces are not trimmed by the function either before or after the
 /// parsing.
-constexpr unique_ptr_impl::unique_ptr<token_base_t>
+constexpr std::unique_ptr<token_base_t>
 parse_number(std::string_view &text) {
   // Checking for presence of a digit
   std::size_t find_result = text.find_first_not_of("0123456789");
 
   if (find_result == 0) {
-    return unique_ptr_impl::make_unique<failure_t>();
+    return std::make_unique<failure_t>();
   }
 
   // No character other than a digit means it's all digit
@@ -339,7 +335,7 @@ parse_number(std::string_view &text) {
 
   std::string_view number_view = text.substr(0, number_end_pos);
   text.remove_prefix(number_end_pos);
-  return unique_ptr_impl::make_unique<constant_t>(result, number_view);
+  return std::make_unique<constant_t>(result, number_view);
 }
 
 /// Trims characters from ignore_list at the beginning of the formula.
@@ -376,7 +372,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
     // read a token
 
     // Token is a number constant
-    if (unique_ptr_impl::unique_ptr<token_base_t> parsed_token =
+    if (std::unique_ptr<token_base_t> parsed_token =
             parse_number(formula);
         parsed_token->kind == constant_v) {
       // Put it into the output queue
