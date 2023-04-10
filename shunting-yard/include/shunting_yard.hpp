@@ -3,8 +3,8 @@
 // Implementation based on:
 // https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
+#include <algorithm>
 #include <iterator>
-#include <memory>
 #include <ranges>
 #include <string_view>
 #include <variant>
@@ -210,20 +210,20 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
       fmt::print("  Output queue: ");
       for (token_t const &current_token : output_queue) {
         fmt::print("{} ", std::visit(
-                               [](auto const &visited_token) {
-                                 return visited_token.text;
-                               },
-                               current_token));
+                              [](auto const &visited_token) {
+                                return visited_token.text;
+                              },
+                              current_token));
       }
       fmt::print("\n");
 
       fmt::print("  Operator stack: ");
       for (token_t const &current_token : operator_stack) {
         fmt::print("{} ", std::visit(
-                               [](auto const &visited_token) {
-                                 return visited_token.text;
-                               },
-                               current_token));
+                              [](auto const &visited_token) {
+                                return visited_token.text;
+                              },
+                              current_token));
       }
       fmt::print("\n");
     }
