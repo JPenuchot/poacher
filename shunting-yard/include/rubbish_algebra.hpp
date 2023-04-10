@@ -14,7 +14,7 @@ namespace rubbish_algebra {
 
 /// Parses a given formula to Reverse Polish Notation (RPN).
 template <auto const &Formula>
-constexpr std::vector<shunting_yard::literal_token_t> parse_rubbish() {
+constexpr std::vector<shunting_yard::token_t> parse_rubbish() {
   namespace sy = shunting_yard;
 
   // Defining various tokens
@@ -45,14 +45,17 @@ constexpr std::vector<shunting_yard::literal_token_t> parse_rubbish() {
   // Printing the result (unless the function is constant evaluated)
   if (!std::is_constant_evaluated()) {
     fmt::print("Result: ");
-    for (sy::token_base_t const *current_token_pointer :
-         parsing_result.output_queue) {
-      fmt::print("{} ", current_token_pointer->text);
+    for (sy::token_t const &current_token : parsing_result) {
+      fmt::print("{} ", std::visit(
+                            [](auto const &visited_token) {
+                              return visited_token.text;
+                            },
+                            current_token));
     }
     fmt::print("\n");
   }
 
-  return sy::flatten_rpn_result(parsing_result);
+  return parsing_result;
 }
 
 /// Parses a given formula and generates the corresponsing code
@@ -78,7 +81,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
     // Constant handling
     if constexpr (TokenKind == sy::constant_v) {
-      constexpr sy::literal_constant_t CurrentToken = TokenAsAuto;
+      constexpr sy::constant_t CurrentToken = TokenAsAuto;
       return kumi::push_front(
           operand_stack_tuple,
           [constant = CurrentToken.value]() { return constant; });
@@ -86,7 +89,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
     // Variable dispatch
     else if constexpr (TokenKind == sy::variable_v) {
-      constexpr sy::literal_variable_t CurrentToken = TokenAsAuto;
+      constexpr sy::variable_t CurrentToken = TokenAsAuto;
 
       if constexpr (CurrentToken.text == "x") {
         return kumi::push_front(
@@ -103,7 +106,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
     // Function dispatch
     else if constexpr (TokenKind == sy::function_v) {
-      constexpr sy::literal_function_t CurrentToken = TokenAsAuto;
+      constexpr sy::function_t CurrentToken = TokenAsAuto;
 
       if constexpr (CurrentToken.text == "sin") {
         auto const &operand = kumi::get<0>(operand_stack_tuple);
@@ -125,7 +128,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
     // Operator dispatch
     else if constexpr (TokenKind == sy::operator_v) {
-      constexpr sy::literal_operator_t CurrentToken = TokenAsAuto;
+      constexpr sy::operator_t CurrentToken = TokenAsAuto;
 
       auto const &operand_a = kumi::get<1>(operand_stack_tuple);
       auto const &operand_b = kumi::get<0>(operand_stack_tuple);
