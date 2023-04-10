@@ -15,16 +15,6 @@
 #include <fmt/core.h>
 
 namespace shunting_yard {
-/// Token kind to match with token types
-enum token_kind_t {
-  failure_v,
-  variable_v,
-  function_v,
-  operator_v,
-  lparen_v,
-  rparen_v,
-  constant_v,
-};
 
 /// Operator associativity
 enum operator_associativity_t { left_v, right_v };
@@ -89,6 +79,17 @@ namespace _test {
 constexpr token_t test_literal_token(constant_t(1, "one"));
 }
 
+/// Token kind to match with token types
+enum token_kind_t {
+  failure_v,
+  variable_v,
+  function_v,
+  operator_v,
+  lparen_v,
+  rparen_v,
+  constant_v,
+};
+
 /// Helper kind getter for literal_failure_t.
 constexpr token_kind_t get_kind(failure_t const &) { return failure_v; }
 /// Helper kind getter for literal_variable_t.
@@ -115,7 +116,7 @@ struct token_specification_t {
 };
 
 /// Represents the parsing result of parse_formula.
-using rpn_result_t = std::vector<token_t>;
+using parse_result_t = std::vector<token_t>;
 
 /// Tries to parse a token from the token list and returns an iterator to it.
 /// - If found, it will be removed from the beginning of formula.
@@ -186,15 +187,15 @@ constexpr void trim_formula(std::string_view &formula,
 
 /// Parses a formula. The result is a vector of pointers to token_spec_t
 /// elements contained in the various vectors of spec.
-rpn_result_t constexpr parse_to_rpn(std::string_view formula,
-                                    token_specification_t const &spec) {
+parse_result_t constexpr parse_to_rpn(std::string_view formula,
+                                      token_specification_t const &spec) {
   // The functions referred to in this algorithm are simple single argument
   // functions such as sine, inverse or factorial.
 
   // This implementation does not implement composite functions, functions
   // with a variable number of arguments, or unary operators.
 
-  rpn_result_t output_queue;
+  parse_result_t output_queue;
   std::vector<token_t> operator_stack;
 
   if (!std::is_constant_evaluated()) {
@@ -233,7 +234,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
     if (token_t parsed_token = parse_number(formula);
         std::holds_alternative<constant_t>(parsed_token)) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read number\n");
+        fmt::print("Reading number\n");
       }
       // Put it into the output queue
       output_queue.push_back(parsed_token);
@@ -244,7 +245,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
                  parse_token_from_spec_list(formula, spec.variables);
              variable_spec_iterator != spec.variables.end()) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read variable\n");
+        fmt::print("Reading variable\n");
       }
       // Put it into the output queue
       output_queue.push_back(*variable_spec_iterator);
@@ -255,7 +256,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
                  parse_token_from_spec_list(formula, spec.functions);
              function_spec_iterator != spec.functions.end()) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read function\n");
+        fmt::print("Reading function\n");
       }
       // Push it onto the operator stack
       operator_stack.push_back(*function_spec_iterator);
@@ -266,7 +267,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
                  parse_token_from_spec_list(formula, spec.operators);
              operator_a_spec_iterator != spec.operators.end()) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read operator\n");
+        fmt::print("Reading operator\n");
       }
 
       operator_t const &operator_a = *operator_a_spec_iterator;
@@ -307,7 +308,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
                  parse_token_from_spec_list(formula, spec.lparens);
              lparen_token_iterator != spec.lparens.end()) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read lparen\n");
+        fmt::print("Reading lparen\n");
       }
       // push it onto the operator stack
       operator_stack.push_back(*lparen_token_iterator);
@@ -318,7 +319,7 @@ rpn_result_t constexpr parse_to_rpn(std::string_view formula,
                  parse_token_from_spec_list(formula, spec.rparens);
              rparen_token_iterator != spec.rparens.end()) {
       if (!std::is_constant_evaluated()) {
-        fmt::print("Read rparen\n");
+        fmt::print("Reading rparen\n");
       }
       // the operator at the top of the operator stack is not a left parenthesis
       while (operator_stack.empty() ||

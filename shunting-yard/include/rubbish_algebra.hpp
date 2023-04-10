@@ -14,7 +14,7 @@ namespace rubbish_algebra {
 
 /// Parses a given formula to Reverse Polish Notation (RPN).
 template <auto const &Formula>
-constexpr std::vector<shunting_yard::token_t> parse_rubbish() {
+constexpr shunting_yard::parse_result_t parse_rubbish() {
   namespace sy = shunting_yard;
 
   // Defining various tokens
@@ -40,7 +40,7 @@ constexpr std::vector<shunting_yard::token_t> parse_rubbish() {
       .lparens = {sy::lparen_t("(")},
       .rparens = {sy::rparen_t(")")}};
 
-  sy::rpn_result_t parsing_result = parse_to_rpn(Formula, rubbish_algebra);
+  sy::parse_result_t parsing_result = parse_to_rpn(Formula, rubbish_algebra);
 
   // Printing the result (unless the function is constant evaluated)
   if (!std::is_constant_evaluated()) {
