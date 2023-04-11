@@ -105,8 +105,8 @@ constexpr token_kind_t get_kind(rparen_t const &) { return rparen_v; }
 /// Helper kind getter for literal_constant_t.
 constexpr token_kind_t get_kind(constant_t const &) { return constant_v; }
 
-/// Grammar specification that defines a formula to recognizable with the
-/// shunting-yard algorithm.
+/// Definition of the various tokens for an algebra: variable identifiers,
+/// function identifiers, infix operators, and parenthesis.
 struct token_specification_t {
   std::vector<variable_t> variables;
   std::vector<function_t> functions;
