@@ -14,7 +14,7 @@ template <typename T = void> inline auto blaze_expression() {
   blaze::DynamicVector<unsigned int> vector_b(32, 12);
 
   blaze::DynamicVector<unsigned int> res =
-      rubbish_algebra::process_rubbish<program_string>(vector_a, vector_b);
+      rubbish_algebra::codegen<program_string>()(vector_a, vector_b);
 
   return res;
 }

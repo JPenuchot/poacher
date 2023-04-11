@@ -18,9 +18,10 @@ int main() {
   blaze::DynamicVector<float> vector_x(vec_size, 1.);
   blaze::DynamicVector<float> vector_y(vec_size, 12.);
 
+  auto function = rubbish_algebra::codegen<formula>();
+
   // Processing the formula into an expression template, and printing it.
-  for (float const e :
-       rubbish_algebra::process_rubbish<formula>(vector_x, vector_y)) {
+  for (float const e : function(vector_x, vector_y)) {
     fmt::print("{} ", e);
   }
   fmt::print("\n");

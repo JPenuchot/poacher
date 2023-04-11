@@ -60,8 +60,7 @@ parse_rubbish(std::string_view const &formula) {
 }
 
 /// Parses a given formula and generates the corresponsing code
-template <auto const &Formula>
-auto process_rubbish(auto const &input_x, auto const &input_y) {
+template <auto const &Formula> constexpr auto codegen() {
   namespace sy = shunting_yard;
 
   // First transformation into an array
@@ -85,7 +84,9 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
       constexpr sy::constant_t CurrentToken = TokenAsAuto;
       return kumi::push_front(
           operand_stack_tuple,
-          [constant = CurrentToken.value]() { return constant; });
+          [constant = CurrentToken.value](auto const &, auto const &) {
+            return constant;
+          });
     }
 
     // Variable dispatch
@@ -94,12 +95,14 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
       if constexpr (CurrentToken.text == "x") {
         return kumi::push_front(
-            operand_stack_tuple, [&input_x]() -> auto const & {
+            operand_stack_tuple,
+            [](auto const &input_x, auto const &) -> auto const & {
               return input_x;
             });
       } else if constexpr (CurrentToken.text == "y") {
         return kumi::push_front(
-            operand_stack_tuple, [&input_y]() -> auto const & {
+            operand_stack_tuple,
+            [](auto const &, auto const &input_y) -> auto const & {
               return input_y;
             });
       }
@@ -113,7 +116,10 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
         auto const &operand = kumi::get<0>(operand_stack_tuple);
         auto head = kumi::pop_front(operand_stack_tuple);
 
-        return kumi::push_front(head, [operand]() { return sin(operand()); });
+        return kumi::push_front(
+            head, [operand](auto const &input_x, auto const &input_y) {
+              return sin(operand(input_x, input_y));
+            });
       }
 
       else if constexpr (CurrentToken.text == "max") {
@@ -121,8 +127,10 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
         auto const &operand_b = kumi::get<0>(operand_stack_tuple);
         auto head = kumi::pop_front(kumi::pop_front(operand_stack_tuple));
 
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return max(operand_a(), operand_b());
+        return kumi::push_front(head, [operand_a,
+                                       operand_b](auto const &input_x,
+                                                  auto const &input_y) {
+          return max(operand_a(input_x, input_y), operand_b(input_x, input_y));
         });
       }
     }
@@ -139,25 +147,36 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
       auto head = kumi::pop_front(kumi::pop_front(operand_stack_tuple));
 
       if constexpr (CurrentToken.text == "+") {
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return operand_a() + operand_b();
-        });
+        return kumi::push_front(
+            head,
+            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
+              return operand_a(input_x, input_y) + operand_b(input_x, input_y);
+            });
       } else if constexpr (CurrentToken.text == "-") {
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return operand_a() - operand_b();
-        });
+        return kumi::push_front(
+            head,
+            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
+              return operand_a(input_x, input_y) - operand_b(input_x, input_y);
+            });
       } else if constexpr (CurrentToken.text == "*") {
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return operand_a() * operand_b();
-        });
+        return kumi::push_front(
+            head,
+            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
+              return operand_a(input_x, input_y) * operand_b(input_x, input_y);
+            });
       } else if constexpr (CurrentToken.text == "/") {
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return operand_a() / operand_b();
-        });
+        return kumi::push_front(
+            head,
+            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
+              return operand_a(input_x, input_y) / operand_b(input_x, input_y);
+            });
       } else if constexpr (CurrentToken.text == "^") {
-        return kumi::push_front(head, [operand_a, operand_b]() {
-          return blaze::pow(operand_a(), operand_b());
-        });
+        return kumi::push_front(
+            head,
+            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
+              return blaze::pow(operand_a(input_x, input_y),
+                                operand_b(input_x, input_y));
+            });
       }
     }
   };
@@ -166,7 +185,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
   // The result should be a single lambda in a tuple.
   auto [result] =
       sy::consume_tokens<rpn_result_tuple>(token_processor, kumi::make_tuple());
-  return result();
+  return result;
 }
 
 } // namespace rubbish_algebra
