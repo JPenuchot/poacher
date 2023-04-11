@@ -44,7 +44,7 @@ parse_rubbish(std::string_view const &formula) {
   sy::parse_result_t parsing_result = parse_to_rpn(formula, rubbish_algebra);
 
   // Printing the result (unless the function is constant evaluated)
-  if (!std::is_constant_evaluated()) {
+  if !consteval {
     fmt::print("Result: ");
     for (sy::token_t const &current_token : parsing_result) {
       fmt::print("{} ", std::visit(
