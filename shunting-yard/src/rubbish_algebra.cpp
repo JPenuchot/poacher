@@ -11,7 +11,7 @@ int main() {
   static constexpr auto formula = "sin((x + 3) / 3 * y ^ 2)";
 
   // Runtime parsing prints parsing steps
-  rubbish_algebra::parse_rubbish<formula>();
+  rubbish_algebra::parse_rubbish(formula);
 
   // Input vectors
   constexpr std::size_t vec_size = 16;

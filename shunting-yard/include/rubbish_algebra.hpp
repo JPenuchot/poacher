@@ -13,8 +13,8 @@
 namespace rubbish_algebra {
 
 /// Parses a given formula to Reverse Polish Notation (RPN).
-template <auto const &Formula>
-constexpr shunting_yard::parse_result_t parse_rubbish() {
+constexpr shunting_yard::parse_result_t
+parse_rubbish(std::string_view const &formula) {
   namespace sy = shunting_yard;
 
   // Defining various tokens
@@ -40,7 +40,8 @@ constexpr shunting_yard::parse_result_t parse_rubbish() {
       .lparens = {sy::lparen_t("(")},
       .rparens = {sy::rparen_t(")")}};
 
-  sy::parse_result_t parsing_result = parse_to_rpn(Formula, rubbish_algebra);
+  // Running the Shunting yard algorithm with our token specification
+  sy::parse_result_t parsing_result = parse_to_rpn(formula, rubbish_algebra);
 
   // Printing the result (unless the function is constant evaluated)
   if (!std::is_constant_evaluated()) {
@@ -65,7 +66,7 @@ auto process_rubbish(auto const &input_x, auto const &input_y) {
 
   // First transformation into an array
   constexpr static auto rpn_result_array =
-      sy::eval_as_array<[]() constexpr { return parse_rubbish<Formula>(); }>();
+      sy::eval_as_array<[]() constexpr { return parse_rubbish(Formula); }>();
 
   // Second transformation into a tuple
   constexpr static auto rpn_result_tuple =
