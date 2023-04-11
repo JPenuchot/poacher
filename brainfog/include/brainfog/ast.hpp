@@ -10,24 +10,15 @@ namespace brainfog {
 
 /// Represents a Brainfuck token.
 enum token_t : char {
-  /// ++ptr;
-  pointer_increase_v = '>',
-  /// --ptr;
-  pointer_decrease_v = '<',
-  /// ++*ptr;
-  pointee_increase_v = '+',
-  /// --*ptr;
-  pointee_decrease_v = '-',
-  /// putchar(*ptr);
-  put_v = '.',
-  /// *ptr=getchar();
-  get_v = ',',
-  /// while (*ptr) {
-  while_begin_v = '[',
-  /// }
-  while_end_v = ']',
-  /// nop
-  nop_v,
+  pointer_increase_v = '>', // ++ptr;
+  pointer_decrease_v = '<', // --ptr;
+  pointee_increase_v = '+', // ++*ptr;
+  pointee_decrease_v = '-', // --*ptr;
+  put_v = '.',              // putchar(*ptr);
+  get_v = ',',              // *ptr=getchar();
+  while_begin_v = '[',      // while (*ptr) {
+  while_end_v = ']',        // }
+  nop_v,                    // nop
 };
 
 /// Converts a char into its corresponding Brainfuck token_t value.
