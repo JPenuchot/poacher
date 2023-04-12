@@ -16,12 +16,12 @@ add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 ctbench_add_benchmark_for_range(
   shunting-yard.addition-series.blaze-expression.clang
   addition-series/blaze-expression.cpp
-  ${SY_M_RANGE} ${SY_BENCH_SAMPLES})
+  ${SY_M_RANGE} ${SY_SAMPLES})
 
 ctbench_add_benchmark_for_range(
   shunting-yard.addition-series.text-formula.clang
   addition-series/text-formula.cpp
-  ${SY_M_RANGE} ${SY_BENCH_SAMPLES})
+  ${SY_M_RANGE} ${SY_SAMPLES})
 
 ctbench_add_benchmark_for_range(shunting-yard.addition-series.type-check.clang
   addition-series/type-check.cpp
