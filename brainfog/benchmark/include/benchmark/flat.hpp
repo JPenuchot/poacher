@@ -23,7 +23,7 @@ template <auto const &ProgramString> constexpr auto to_flat_ast() {
 }
 
 /// Parse and run program using the flat AST backend
-template <auto const &ProgramString> void run_program() {
+template <auto const &ProgramString> inline void run_program() {
   namespace bf = brainfog;
   namespace bflat = bf::flat;
 

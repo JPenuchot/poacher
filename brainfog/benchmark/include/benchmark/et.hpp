@@ -4,7 +4,7 @@
 #include <brainfog/parsers/naive.hpp>
 #include <brainfog/program.hpp>
 
-template <auto const &ProgramString> auto run_program() {
+template <auto const &ProgramString> inline void run_program() {
   brainfog::program_state_t s;
 
   brainfog::expression_template::run(
