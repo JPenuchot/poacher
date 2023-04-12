@@ -18,7 +18,7 @@ add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-flat
   hello_world/flat.cpp
-  BF_L_RANGE ${BF_SAMPLES})
+  BF_M_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-hello_world-et
   hello_world/et.cpp
@@ -31,7 +31,7 @@ ctbench_add_benchmark_for_range(
 ctbench_add_benchmark_for_range(
   bfbench-consecutive_loops-flat
   consecutive_loops/flat.cpp
-  BF_L_RANGE ${BF_SAMPLES})
+  BF_M_RANGE ${BF_SAMPLES})
 ctbench_add_benchmark_for_range(
   bfbench-consecutive_loops-et
   consecutive_loops/et.cpp
