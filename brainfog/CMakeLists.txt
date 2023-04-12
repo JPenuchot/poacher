@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(brainfog)
 
-# find_package(ctpg REQUIRED)
-
 set(COMPILE_BENCHMARKS
     OFF
     CACHE BOOL "Enable compile benchmarks")
@@ -22,7 +20,6 @@ add_compile_options(
 add_executable(brainfog ${SOURCES})
 
 target_include_directories(brainfog PUBLIC "include/")
-# target_link_libraries(brainfog PUBLIC ctpg::ctpg)
 
 # Format
 add_custom_target(format-brainfog COMMAND "clang-format" "-i" ${SOURCES}
