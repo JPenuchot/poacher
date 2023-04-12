@@ -9,7 +9,7 @@
   "demangle": false,
   "draw_points": false,
   "width": 1000,
-  "height": 600,
+  "height": 400,
   "key_ptrs": ["/name", "/args/detail"],
   "_key_ptrs":  ["/name"],
   "value_ptr": "/dur",
