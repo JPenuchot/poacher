@@ -9,9 +9,19 @@
   "demangle": false,
   "draw_points": false,
   "width": 1200,
-  "height": 800,
+  "height": 600,
   "key_ptrs": ["/name", "/args/detail"],
   "_key_ptrs":  ["/name"],
   "value_ptr": "/dur",
-  "plot_file_extensions": [".svg"]
+  "plot_file_extensions": [".svg"],
+  "filters": [
+    {
+      "type": "match",
+      "regex_match": false,
+      "matcher":
+      {
+        "name": "ExecuteCompiler"
+      }
+    }
+  ]
 }
