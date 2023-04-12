@@ -6,8 +6,6 @@
 
 #include <fmt/core.h>
 
-#include <blaze/Blaze.h>
-
 #include <vector>
 
 namespace rubbish_algebra {
@@ -171,12 +169,11 @@ template <auto const &Formula> constexpr auto codegen() {
               return operand_a(input_x, input_y) / operand_b(input_x, input_y);
             });
       } else if constexpr (CurrentToken.text == "^") {
-        return kumi::push_front(
-            head,
-            [operand_a, operand_b](auto const &input_x, auto const &input_y) {
-              return blaze::pow(operand_a(input_x, input_y),
-                                operand_b(input_x, input_y));
-            });
+        return kumi::push_front(head, [operand_a,
+                                       operand_b](auto const &input_x,
+                                                  auto const &input_y) {
+          return pow(operand_a(input_x, input_y), operand_b(input_x, input_y));
+        });
       }
     }
   };
