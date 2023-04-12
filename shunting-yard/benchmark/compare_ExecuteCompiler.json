@@ -1,0 +1,27 @@
+{
+  "plotter": "compare_by",
+  "legend_title": "Timings",
+  "x_label": "Benchmark size factor",
+  "y_label": "Time (µs)",
+  "draw_average": true,
+  "average_error_bars": true,
+  "draw_median": false,
+  "demangle": false,
+  "draw_points": false,
+  "width": 1000,
+  "height": 400,
+  "key_ptrs": ["/name", "/args/detail"],
+  "_key_ptrs":  ["/name"],
+  "value_ptr": "/dur",
+  "plot_file_extensions": [".svg", ".png"],
+  "filters": [
+    {
+      "type": "match",
+      "regex_match": false,
+      "matcher":
+      {
+        "name": "ExecuteCompiler"
+      }
+    }
+  ]
+}
