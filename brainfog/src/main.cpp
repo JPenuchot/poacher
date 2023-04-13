@@ -3,9 +3,9 @@
 #include <brainfog/parsers/naive.hpp>
 #include <brainfog/program.hpp>
 
+// #define FLAT
 // #define ET
-#define FLAT
-// #define PBG
+#define PBG
 
 #ifdef ET
 #include <brainfog/backends/expression_template.hpp>
@@ -19,7 +19,7 @@
 #include <brainfog/backends/pass_by_generator.hpp>
 #endif
 
-static constexpr auto program_string = brainfog::example_programs::hello_world;
+static constexpr auto program_string = brainfog::example_programs::mandelbrot;
 
 int main() {
   namespace bf = brainfog;
@@ -49,8 +49,7 @@ int main() {
     };
 
     bf::program_state_t s;
-    auto program = bf::pass_by_generator::codegen<Generator>();
-    program(s);
+    bf::pass_by_generator::codegen<Generator>()(s);
   }
 #endif
 }
