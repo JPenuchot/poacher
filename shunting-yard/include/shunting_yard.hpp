@@ -385,47 +385,21 @@ template <auto Fun> constexpr auto eval_as_array() {
   return res;
 }
 
-/// Converts an array of variants into a tuple of
-/// its value as their underlaying types.
-template <auto const &ArrayOfVariants>
-constexpr auto array_of_variants_to_tuple() {
-  // Storing the size of the array in a constexpr variable.
-  constexpr std::size_t Size = ArrayOfVariants.size();
-
-  // Static for-loop on array indexes
-  return []<std::size_t... ArrayIndexPack>(
-      std::index_sequence<ArrayIndexPack...>) {
-    // Making a tuple of the array elements
-    return kumi::make_tuple(
-        // Unrolling the fold expression into a lambda that extracts the variant
-        // elements into values of their actual types
-        []<std::size_t UnpackedArrayIndex>(
-            std::integral_constant<std::size_t, UnpackedArrayIndex>) {
-          // Extracting type index into a constexpr variable
-          constexpr std::size_t TypeIndex =
-              ArrayOfVariants[UnpackedArrayIndex].index();
-          // Getting the underlaying value
-          return std::get<TypeIndex>(ArrayOfVariants[UnpackedArrayIndex]);
-        }(std::integral_constant<std::size_t, ArrayIndexPack>{})...);
-  }
-  (std::make_index_sequence<Size>{});
-}
-
-/// For each token in RPNStackAsTuple, consume_tokens will call the
-template <auto const &RPNStackAsTuple, std::size_t RPNStackIndex = 0>
+/// For each token in RPNStackAsArray, consume_tokens will call the
+template <auto const &RPNStackAsArray, std::size_t RPNStackIndex = 0>
 constexpr auto consume_tokens(auto consumer, auto state) {
   // If no token is left to handle, return the value stack
   if constexpr (constexpr std::size_t RPNStackSize = kumi::size_v<
-                    std::remove_cvref_t<decltype(RPNStackAsTuple)>>;
+                    std::remove_cvref_t<decltype(RPNStackAsArray)>>;
                 RPNStackIndex == RPNStackSize) {
     return state;
   }
   // Otherwise, apply stack for given token and recurse on next token
   else if constexpr (RPNStackIndex < RPNStackSize) {
     // Apply current stack and pass front token as a template parameter
-    return consume_tokens<RPNStackAsTuple, RPNStackIndex + 1>(
+    return consume_tokens<RPNStackAsArray, RPNStackIndex + 1>(
         consumer,
-        consumer.template operator()<RPNStackAsTuple, RPNStackIndex>(state));
+        consumer.template operator()<RPNStackAsArray, RPNStackIndex>(state));
   }
 }
 

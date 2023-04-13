@@ -65,15 +65,13 @@ template <auto const &Formula> constexpr auto codegen() {
   constexpr static auto rpn_result_array =
       sy::eval_as_array<[]() constexpr { return parse_rubbish(Formula); }>();
 
-  // Second transformation into a tuple
-  constexpr static auto rpn_result_tuple =
-      sy::array_of_variants_to_tuple<rpn_result_array>();
-
   // Defining actions for each token
-  auto token_processor = [&]<auto const & RPNStackAsTuple,
+  auto token_processor = [&]<auto const & RPNStackAsArray,
                              std::size_t RPNStackIndex>(
       auto operand_stack_tuple) constexpr {
-    constexpr auto TokenAsAuto = kumi::get<RPNStackIndex>(RPNStackAsTuple);
+    constexpr std::size_t TypeId = RPNStackAsArray[RPNStackIndex].index();
+    constexpr auto TokenAsAuto =
+        std::get<TypeId>(RPNStackAsArray[RPNStackIndex]);
 
     constexpr sy::token_kind_t TokenKind = sy::get_kind(TokenAsAuto);
 
@@ -181,7 +179,7 @@ template <auto const &Formula> constexpr auto codegen() {
   // Processing the RPN representation of the formula.
   // The result should be a single lambda in a tuple.
   auto [result] =
-      sy::consume_tokens<rpn_result_tuple>(token_processor, kumi::make_tuple());
+      sy::consume_tokens<rpn_result_array>(token_processor, kumi::make_tuple());
   return result;
 }
 
