@@ -12,7 +12,7 @@ template <typename T = void> inline auto bench_me() {
   int a = 32;
   int b = 32;
 
-  int res = rubbish_algebra::codegen<program_string>()(a, b);
+  int res = simple_algebra::codegen<program_string>()(a, b);
 
   return res;
 }
