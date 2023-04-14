@@ -11,19 +11,26 @@ include_directories(include)
 add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 
 ctbench_add_benchmark_for_range(
-  shunting-yard.addition-series.blaze-expression
-  addition-series/blaze-expression.cpp
+  shunting-yard.addition-series.no-formula-blaze
+  addition-series/no-formula-blaze.cpp
   SY_RANGE ${SY_SAMPLES})
 
 ctbench_add_benchmark_for_range(
-  shunting-yard.addition-series.text-formula
-  addition-series/text-formula.cpp
+  shunting-yard.addition-series.formula-blaze
+  addition-series/formula-blaze.cpp
   SY_RANGE ${SY_SAMPLES})
 
 ctbench_add_benchmark_for_range(
   shunting-yard.addition-series.formula-no-blaze
   addition-series/formula-no-blaze.cpp
   SY_RANGE ${SY_SAMPLES})
+
+
+ctbench_add_benchmark_for_range(
+  shunting-yard.addition-series.no-formula-no-blaze
+  addition-series/no-formula-no-blaze.cpp
+  SY_RANGE ${SY_SAMPLES})
+
 
 ctbench_add_benchmark_for_range(shunting-yard.addition-series.type-check
   addition-series/type-check.cpp
@@ -32,6 +39,7 @@ ctbench_add_benchmark_for_range(shunting-yard.addition-series.type-check
 ctbench_add_graph(
   shunting-yard.addition-series.graph
   compare_ExecuteCompiler.json
-  shunting-yard.addition-series.blaze-expression
-  shunting-yard.addition-series.text-formula
-  shunting-yard.addition-series.formula-no-blaze)
+  shunting-yard.addition-series.no-formula-blaze
+  shunting-yard.addition-series.formula-blaze
+  shunting-yard.addition-series.formula-no-blaze
+  shunting-yard.addition-series.no-formula-no-blaze)
