@@ -8,15 +8,15 @@
 
 #include <vector>
 
-namespace rubbish_algebra {
+namespace simple_algebra {
 
 /// Parses a given formula to Reverse Polish Notation (RPN).
 constexpr shunting_yard::parse_result_t
-parse_rubbish(std::string_view const &formula) {
+parse(std::string_view const &formula) {
   namespace sy = shunting_yard;
 
   // Defining various tokens
-  sy::token_specification_t rubbish_algebra{
+  sy::token_specification_t simple_algebra_spec{
       .variables =
           {
               sy::variable_t("x"),
@@ -39,7 +39,7 @@ parse_rubbish(std::string_view const &formula) {
       .rparens = {sy::rparen_t(")")}};
 
   // Running the Shunting yard algorithm with our token specification
-  sy::parse_result_t parsing_result = parse_to_rpn(formula, rubbish_algebra);
+  sy::parse_result_t parsing_result = parse_to_rpn(formula, simple_algebra_spec);
 
   // Printing the result (unless the function is constant evaluated)
   if !consteval {
@@ -63,7 +63,7 @@ template <auto const &Formula> constexpr auto codegen() {
 
   // First transformation into an array
   constexpr static auto rpn_result_array =
-      sy::eval_as_array<[]() constexpr { return parse_rubbish(Formula); }>();
+      sy::eval_as_array<[]() constexpr { return parse(Formula); }>();
 
   // Defining actions for each token
   auto token_processor = [&]<auto const & RPNStackAsArray,
@@ -183,4 +183,4 @@ template <auto const &Formula> constexpr auto codegen() {
   return result;
 }
 
-} // namespace rubbish_algebra
+} // namespace simple_algebra
