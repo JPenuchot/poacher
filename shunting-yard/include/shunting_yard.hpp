@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <ranges>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -124,13 +123,12 @@ using parse_result_t = std::vector<token_t>;
 ///   range.
 /// Whitespaces are not trimmed by the function either before or after the
 /// parsing.
-template <std::ranges::range RangeType>
-constexpr std::ranges::iterator_t<RangeType const>
-parse_token_from_spec_list(std::string_view &formula,
-                           RangeType const &token_list) {
+constexpr auto parse_token_from_spec_list(std::string_view &formula,
+                                          auto const &token_list_begin,
+                                          auto const &token_list_end) {
   // Try to find the token from the list
-  std::ranges::iterator_t<RangeType const> token_iterator =
-      std::ranges::find_if(token_list, [&](token_t const &token) {
+  auto token_iterator =
+      std::find_if(token_list_begin, token_list_end, [&](token_t const &token) {
         return std::visit(
             [&](auto const &visited_token) -> bool {
               return formula.starts_with(visited_token.text);
@@ -139,7 +137,7 @@ parse_token_from_spec_list(std::string_view &formula,
       });
 
   // If found, remove it from the beginning
-  if (token_iterator != std::ranges::end(token_list)) {
+  if (token_iterator != token_list_end) {
     formula.remove_prefix(token_iterator->text.size());
   }
 
@@ -241,8 +239,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is a variable
-    else if (auto variable_spec_iterator =
-                 parse_token_from_spec_list(formula, spec.variables);
+    else if (auto variable_spec_iterator = parse_token_from_spec_list(
+                 formula, spec.variables.begin(), spec.variables.end());
              variable_spec_iterator != spec.variables.end()) {
       if !consteval {
         fmt::print("Reading variable\n");
@@ -252,8 +250,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is a function
-    else if (auto function_spec_iterator =
-                 parse_token_from_spec_list(formula, spec.functions);
+    else if (auto function_spec_iterator = parse_token_from_spec_list(
+                 formula, spec.functions.begin(), spec.functions.end());
              function_spec_iterator != spec.functions.end()) {
       if !consteval {
         fmt::print("Reading function\n");
@@ -263,8 +261,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is an operator 'a'
-    else if (auto operator_a_spec_iterator =
-                 parse_token_from_spec_list(formula, spec.operators);
+    else if (auto operator_a_spec_iterator = parse_token_from_spec_list(
+                 formula, spec.operators.begin(), spec.operators.end());
              operator_a_spec_iterator != spec.operators.end()) {
       if !consteval {
         fmt::print("Reading operator\n");
@@ -304,8 +302,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is a left parenthesis (i.e. "(")
-    else if (auto lparen_token_iterator =
-                 parse_token_from_spec_list(formula, spec.lparens);
+    else if (auto lparen_token_iterator = parse_token_from_spec_list(
+                 formula, spec.lparens.begin(), spec.lparens.end());
              lparen_token_iterator != spec.lparens.end()) {
       if !consteval {
         fmt::print("Reading lparen\n");
@@ -315,8 +313,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is a right parenthesis (i.e. ")")
-    else if (auto rparen_token_iterator =
-                 parse_token_from_spec_list(formula, spec.rparens);
+    else if (auto rparen_token_iterator = parse_token_from_spec_list(
+                 formula, spec.rparens.begin(), spec.rparens.end());
              rparen_token_iterator != spec.rparens.end()) {
       if !consteval {
         fmt::print("Reading rparen\n");
