@@ -11,8 +11,7 @@
 namespace simple_algebra {
 
 /// Parses a given formula to Reverse Polish Notation (RPN).
-constexpr shunting_yard::parse_result_t
-parse(std::string_view const &formula) {
+constexpr shunting_yard::parse_result_t parse(std::string_view const &formula) {
   namespace sy = shunting_yard;
 
   // Defining various tokens
@@ -24,7 +23,7 @@ parse(std::string_view const &formula) {
           },
       .functions =
           {
-              sy::function_t("sin"),
+              sy::function_t("\\sin"),
               sy::function_t("max"),
           },
       .operators =
@@ -35,11 +34,12 @@ parse(std::string_view const &formula) {
               sy::operator_t("/", sy::left_v, 20),
               sy::operator_t("^", sy::right_v, 30),
           },
-      .lparens = {sy::lparen_t("(")},
-      .rparens = {sy::rparen_t(")")}};
+      .lparens = {sy::lparen_t("("), sy::lparen_t("{")},
+      .rparens = {sy::rparen_t(")"), sy::rparen_t("}")}};
 
   // Running the Shunting yard algorithm with our token specification
-  sy::parse_result_t parsing_result = parse_to_rpn(formula, simple_algebra_spec);
+  sy::parse_result_t parsing_result =
+      parse_to_rpn(formula, simple_algebra_spec);
 
   // Printing the result (unless the function is constant evaluated)
   if !consteval {

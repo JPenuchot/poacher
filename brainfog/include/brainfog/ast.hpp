@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -57,7 +58,8 @@ enum ast_node_kind_t : std::uint8_t {
   ast_while_v,
 };
 
-/// Parent class for any AST node type, holds its type as an ast_node_kind_t
+/// Parent class for any AST node type, holds its type as an
+/// ast_node_kind_t
 struct node_interface_t {
 private:
   ast_node_kind_t kind_;
@@ -96,7 +98,8 @@ struct ast_token_t : node_interface_t, make_visitable_t<ast_token_t> {
   token_t token_;
 
 public:
-  constexpr ast_token_t(token_t t) : node_interface_t(ast_token_v), token_(t) {}
+  constexpr ast_token_t(token_t t)
+      : node_interface_t(ast_token_v), token_(t) {}
 
   /// Returns the token's value.
   constexpr token_t get_token() const { return token_; }
@@ -121,7 +124,9 @@ public:
   constexpr ast_block_t &operator=(ast_block_t const &v) = delete;
 
   /// Returns a const reference to its content.
-  constexpr ast_node_vec_t const &get_content() const { return content_; }
+  constexpr ast_node_vec_t const &get_content() const {
+    return content_;
+  }
   constexpr ast_node_vec_t &get_content() { return content_; }
 };
 
@@ -140,19 +145,22 @@ public:
 
 // isa implementation
 
-/// Returns true if the AST node holds a node of specified type by looking up
-/// its ast_node_kind_t element, otherwise false.
+/// Returns true if the AST node holds a node of specified type by
+/// looking up its ast_node_kind_t element, otherwise false.
 template <typename T> constexpr bool isa(node_interface_t const &n);
 
-template <> constexpr bool isa<ast_token_t>(node_interface_t const &n) {
+template <>
+constexpr bool isa<ast_token_t>(node_interface_t const &n) {
   return n.get_kind() == ast_token_v;
 }
 
-template <> constexpr bool isa<ast_block_t>(node_interface_t const &n) {
+template <>
+constexpr bool isa<ast_block_t>(node_interface_t const &n) {
   return n.get_kind() == ast_block_v;
 }
 
-template <> constexpr bool isa<ast_while_t>(node_interface_t const &n) {
+template <>
+constexpr bool isa<ast_while_t>(node_interface_t const &n) {
   return n.get_kind() == ast_while_v;
 }
 
@@ -165,14 +173,15 @@ constexpr bool isa(std::unique_ptr<U> const &p) {
   return isa<T>(*p);
 }
 
-/// Casts a given pointer to the specified type if it matches() its kind tag,
-/// otherwise returns nullptr.
+/// Casts a given pointer to the specified type if it matches() its
+/// kind tag, otherwise returns nullptr.
 template <typename T, typename U>
 constexpr T *getas(std::unique_ptr<U> const &p) {
   return isa<T>(p) ? static_cast<T *>(p.get()) : nullptr;
 }
 
-template <typename F> constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
+template <typename F>
+constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
   switch (p->get_kind()) {
   case ast_token_v:
     return getas<ast_token_t>(p)->visit(f);
