@@ -1,6 +1,6 @@
 #include <brainfog/ast.hpp>
 #include <brainfog/example_programs.hpp>
-#include <brainfog/parsers/naive.hpp>
+#include <brainfog/parser.hpp>
 #include <brainfog/program.hpp>
 
 static constexpr auto program_string = brainfog::example_programs::hello_world;
@@ -16,7 +16,7 @@ namespace bf = brainfog;
 int main() {
   { // Pass by generator backend
     constexpr auto Generator = []() {
-      return bf::naive_parser::parse_ast(program_string);
+      return bf::parser::parse_ast(program_string);
     };
 
     bf::program_state_t s;
@@ -32,7 +32,7 @@ int main() {
   bf::program_state_t s;
 
   auto expression_template = bf::expression_template::to_et(
-      []() { return bf::naive_parser::parse_ast(program_string); });
+      []() { return bf::parser::parse_ast(program_string); });
 
   bf::expression_template::codegen(expression_template)(s);
 }

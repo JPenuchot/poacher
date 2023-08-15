@@ -1,7 +1,7 @@
 #pragma once
 
 #include <brainfog/backends/flat.hpp>
-#include <brainfog/parsers/naive.hpp>
+#include <brainfog/parser.hpp>
 
 /// Parse program to flat AST
 template <auto const &ProgramString> constexpr auto to_flat_ast() {
