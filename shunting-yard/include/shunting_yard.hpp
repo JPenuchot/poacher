@@ -54,12 +54,14 @@ struct operator_t : token_base_t {
 
 /// Literal version for left parenthesis spec type
 struct lparen_t : token_base_t {
-  constexpr lparen_t(std::string_view identifier) : token_base_t{identifier} {}
+  constexpr lparen_t(std::string_view identifier)
+      : token_base_t{identifier} {}
 };
 
 /// Literal version for right parenthesis spec type
 struct rparen_t : token_base_t {
-  constexpr rparen_t(std::string_view identifier) : token_base_t{identifier} {}
+  constexpr rparen_t(std::string_view identifier)
+      : token_base_t{identifier} {}
 };
 
 /// Constant (unsigned integer)
@@ -70,8 +72,9 @@ struct constant_t : token_base_t {
 };
 
 /// Literal generic type for a token.
-using token_t = std::variant<failure_t, variable_t, function_t, operator_t,
-                             lparen_t, rparen_t, constant_t>;
+using token_t =
+    std::variant<failure_t, variable_t, function_t, operator_t,
+                 lparen_t, rparen_t, constant_t>;
 
 // Sanity check
 namespace _test {
@@ -90,22 +93,33 @@ enum token_kind_t {
 };
 
 /// Helper kind getter for literal_failure_t.
-constexpr token_kind_t get_kind(failure_t const &) { return failure_v; }
+constexpr token_kind_t get_kind(failure_t const &) {
+  return failure_v;
+}
 /// Helper kind getter for literal_variable_t.
-constexpr token_kind_t get_kind(variable_t const &) { return variable_v; }
+constexpr token_kind_t get_kind(variable_t const &) {
+  return variable_v;
+}
 /// Helper kind getter for literal_function_t.
-constexpr token_kind_t get_kind(function_t const &) { return function_v; }
+constexpr token_kind_t get_kind(function_t const &) {
+  return function_v;
+}
 /// Helper kind getter for literal_operator_t.
-constexpr token_kind_t get_kind(operator_t const &) { return operator_v; }
+constexpr token_kind_t get_kind(operator_t const &) {
+  return operator_v;
+}
 /// Helper kind getter for literal_lparen_t.
 constexpr token_kind_t get_kind(lparen_t const &) { return lparen_v; }
 /// Helper kind getter for literal_rparen_t.
 constexpr token_kind_t get_kind(rparen_t const &) { return rparen_v; }
 /// Helper kind getter for literal_constant_t.
-constexpr token_kind_t get_kind(constant_t const &) { return constant_v; }
+constexpr token_kind_t get_kind(constant_t const &) {
+  return constant_v;
+}
 
-/// Definition of the various tokens for an algebra: variable identifiers,
-/// function identifiers, infix operators, and parenthesis.
+/// Definition of the various tokens for an algebra: variable
+/// identifiers, function identifiers, infix operators, and
+/// parenthesis.
 struct token_specification_t {
   std::vector<variable_t> variables;
   std::vector<function_t> functions;
@@ -117,18 +131,21 @@ struct token_specification_t {
 /// Represents the parsing result of parse_formula.
 using parse_result_t = std::vector<token_t>;
 
-/// Tries to parse a token from the token list and returns an iterator to it.
+/// Tries to parse a token from the token list and returns an iterator
+/// to it.
 /// - If found, it will be removed from the beginning of formula.
-/// - If not, formula remains unchanged and the iterator will be the end of the
+/// - If not, formula remains unchanged and the iterator will be the
+/// end of the
 ///   range.
-/// Whitespaces are not trimmed by the function either before or after the
-/// parsing.
-constexpr auto parse_token_from_spec_list(std::string_view &formula,
-                                          auto const &token_list_begin,
-                                          auto const &token_list_end) {
+/// Whitespaces are not trimmed by the function either before or after
+/// the parsing.
+constexpr auto
+parse_token_from_spec_list(std::string_view &formula,
+                           auto const &token_list_begin,
+                           auto const &token_list_end) {
   // Try to find the token from the list
-  auto token_iterator =
-      std::find_if(token_list_begin, token_list_end, [&](token_t const &token) {
+  auto token_iterator = std::find_if(
+      token_list_begin, token_list_end, [&](token_t const &token) {
         return std::visit(
             [&](auto const &visited_token) -> bool {
               return formula.starts_with(visited_token.text);
@@ -145,11 +162,12 @@ constexpr auto parse_token_from_spec_list(std::string_view &formula,
 }
 
 /// Tries to parse a number.
-/// - If found, it will return a constant_t object holding its value, and remove
+/// - If found, it will return a constant_t object holding its value,
+/// and remove
 ///   the number from the beginning of the formula.
-/// - If not, formula remains unchanged and it will return a failure_t object.
-/// Whitespaces are not trimmed by the function either before or after the
-/// parsing.
+/// - If not, formula remains unchanged and it will return a failure_t
+/// object. Whitespaces are not trimmed by the function either before
+/// or after the parsing.
 constexpr token_t parse_number(std::string_view &text) {
   // Checking for presence of a digit
   std::size_t find_result = text.find_first_not_of("0123456789");
@@ -159,8 +177,9 @@ constexpr token_t parse_number(std::string_view &text) {
   }
 
   // No character other than a digit means it's all digit
-  std::size_t number_end_pos =
-      find_result == std::string_view::npos ? text.size() : find_result;
+  std::size_t number_end_pos = find_result == std::string_view::npos
+                                   ? text.size()
+                                   : find_result;
 
   // Accumulate digits
   unsigned result = 0;
@@ -183,15 +202,16 @@ constexpr void trim_formula(std::string_view &formula,
   }
 }
 
-/// Parses a formula. The result is a vector of pointers to token_spec_t
-/// elements contained in the various vectors of spec.
-parse_result_t constexpr parse_to_rpn(std::string_view formula,
-                                      token_specification_t const &spec) {
-  // The functions referred to in this algorithm are simple single argument
-  // functions such as sine, inverse or factorial.
+/// Parses a formula. The result is a vector of pointers to
+/// token_spec_t elements contained in the various vectors of spec.
+parse_result_t constexpr parse_to_rpn(
+    std::string_view formula, token_specification_t const &spec) {
+  // The functions referred to in this algorithm are simple single
+  // argument functions such as sine, inverse or factorial.
 
-  // This implementation does not implement composite functions, functions
-  // with a variable number of arguments, or unary operators.
+  // This implementation does not implement composite functions,
+  // functions with a variable number of arguments, or unary
+  // operators.
 
   parse_result_t output_queue;
   std::vector<token_t> operator_stack;
@@ -240,7 +260,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
 
     // Token is a variable
     else if (auto variable_spec_iterator = parse_token_from_spec_list(
-                 formula, spec.variables.begin(), spec.variables.end());
+                 formula, spec.variables.begin(),
+                 spec.variables.end());
              variable_spec_iterator != spec.variables.end()) {
       if !consteval {
         fmt::print("Reading variable\n");
@@ -251,7 +272,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
 
     // Token is a function
     else if (auto function_spec_iterator = parse_token_from_spec_list(
-                 formula, spec.functions.begin(), spec.functions.end());
+                 formula, spec.functions.begin(),
+                 spec.functions.end());
              function_spec_iterator != spec.functions.end()) {
       if !consteval {
         fmt::print("Reading function\n");
@@ -261,8 +283,10 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
     }
 
     // Token is an operator 'a'
-    else if (auto operator_a_spec_iterator = parse_token_from_spec_list(
-                 formula, spec.operators.begin(), spec.operators.end());
+    else if (auto operator_a_spec_iterator =
+                 parse_token_from_spec_list(formula,
+                                            spec.operators.begin(),
+                                            spec.operators.end());
              operator_a_spec_iterator != spec.operators.end()) {
       if !consteval {
         fmt::print("Reading operator\n");
@@ -270,29 +294,33 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
 
       operator_t const &operator_a = *operator_a_spec_iterator;
 
-      // while there is an operator 'b' at the top of the operator stack
-      // which is not a left parenthesis,
-      while (!operator_stack.empty() &&
-             std::visit(
-                 [&]<typename BType>(BType const &operator_b_as_auto) -> bool {
-                   if constexpr (std::is_same_v<BType, operator_t>) {
-                     operator_t const &operator_b = operator_b_as_auto;
-                     // if ('b' has greater precedence than 'a' or
-                     // ('a' and 'b' have the same precedence and 'a' is
-                     // left-associative))
-                     if (operator_b.precedence > operator_a.precedence ||
-                         (operator_a.precedence == operator_b.precedence &&
-                          operator_a.associativity == left_v)) {
-                       return true;
-                     }
-                   } else if constexpr (std::is_same_v<BType, function_t>) {
-                     // or 'b' is a function
-                     return true;
-                   }
-                   // left parenthesis or lower precedence operator
-                   return false;
-                 },
-                 operator_stack.back())) {
+      // while there is an operator 'b' at the top of the operator
+      // stack which is not a left parenthesis,
+      while (
+          !operator_stack.empty() &&
+          std::visit(
+              [&]<typename BType>(
+                  BType const &operator_b_as_auto) -> bool {
+                if constexpr (std::is_same_v<BType, operator_t>) {
+                  operator_t const &operator_b = operator_b_as_auto;
+                  // if ('b' has greater precedence than 'a' or
+                  // ('a' and 'b' have the same precedence and 'a' is
+                  // left-associative))
+                  if (operator_b.precedence > operator_a.precedence ||
+                      (operator_a.precedence ==
+                           operator_b.precedence &&
+                       operator_a.associativity == left_v)) {
+                    return true;
+                  }
+                } else if constexpr (std::is_same_v<BType,
+                                                    function_t>) {
+                  // or 'b' is a function
+                  return true;
+                }
+                // left parenthesis or lower precedence operator
+                return false;
+              },
+              operator_stack.back())) {
         // pop 'b' from the operator stack into the output queue
         output_queue.push_back(operator_stack.back());
         operator_stack.pop_back();
@@ -319,49 +347,56 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
       if !consteval {
         fmt::print("Reading rparen\n");
       }
-      // the operator at the top of the operator stack is not a left parenthesis
-      while (operator_stack.empty() ||
-             !std::holds_alternative<lparen_t>(operator_stack.back())) {
+      // the operator at the top of the operator stack is not a left
+      // parenthesis
+      while (
+          operator_stack.empty() ||
+          !std::holds_alternative<lparen_t>(operator_stack.back())) {
 
         // {assert the operator stack is not empty}
         if (operator_stack.empty()) {
-          // If the stack runs out without finding a left parenthesis, then
-          // there are mismatched parentheses.
+          // If the stack runs out without finding a left parenthesis,
+          // then there are mismatched parentheses.
           fmt::print("Parenthesis mismatch.\n");
           throw;
         }
-        // pop the operator from the operator stack into the output queue
+        // pop the operator from the operator stack into the output
+        // queue
         output_queue.push_back(operator_stack.back());
         operator_stack.pop_back();
       }
 
-      // {assert there is a left parenthesis at the top of the operator stack}
+      // {assert there is a left parenthesis at the top of the
+      // operator stack}
       if (operator_stack.empty() ||
           !std::holds_alternative<lparen_t>(operator_stack.back())) {
         throw;
       }
 
-      // pop the left parenthesis from the operator stack and discard it
+      // pop the left parenthesis from the operator stack and discard
+      // it
       operator_stack.pop_back();
 
       // there is a function token at the top of the operator stack
       if (!operator_stack.empty() &&
           std::holds_alternative<function_t>(operator_stack.back())) {
-        // pop the function from the operator stack into the output queue
+        // pop the function from the operator stack into the output
+        // queue
         output_queue.push_back(operator_stack.back());
         operator_stack.pop_back();
       }
     }
   }
-  /* After the while loop, pop the remaining items from the operator stack into
-   * the output queue. */
+  /* After the while loop, pop the remaining items from the operator
+   * stack into the output queue. */
 
   // there are tokens on the operator stack
   while (!operator_stack.empty()) {
-    // If the operator token on the top of the stack is a parenthesis, then
-    // there are mismatched parentheses.
+    // If the operator token on the top of the stack is a parenthesis,
+    // then there are mismatched parentheses.
 
-    // {assert the operator on top of the stack is not a (left) parenthesis}
+    // {assert the operator on top of the stack is not a (left)
+    // parenthesis}
     if (std::holds_alternative<lparen_t>(operator_stack.back())) {
       throw;
     }
@@ -374,8 +409,8 @@ parse_result_t constexpr parse_to_rpn(std::string_view formula,
   return output_queue;
 }
 
-/// Asuming Fun is a constexpr function that returns a std::vector value,
-/// eval_as_array will store its contents into an std::array.
+/// Asuming Fun is a constexpr function that returns a std::vector
+/// value, eval_as_array will store its contents into an std::array.
 template <auto Fun> constexpr auto eval_as_array() {
   constexpr std::size_t Size = Fun().size();
   std::array<typename decltype(Fun())::value_type, Size> res;
@@ -394,10 +429,12 @@ constexpr auto consume_tokens(auto consumer, auto state) {
   }
   // Otherwise, apply stack for given token and recurse on next token
   else if constexpr (RPNStackIndex < RPNStackSize) {
-    // Apply current stack and pass front token as a template parameter
+    // Apply current stack and pass front token as a template
+    // parameter
     return consume_tokens<RPNStackAsArray, RPNStackIndex + 1>(
         consumer,
-        consumer.template operator()<RPNStackAsArray, RPNStackIndex>(state));
+        consumer.template operator()<RPNStackAsArray, RPNStackIndex>(
+            state));
   }
 }
 
