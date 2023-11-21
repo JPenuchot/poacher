@@ -12,21 +12,21 @@ operator<<(std::ostream &, ast_node_ptr_t const &);
 /// Converts a token into a string_view.
 constexpr std::string_view to_string(token_t t) {
   switch (t) {
-  case fwd_v:
+  case pointer_increase_v:
     return "++ptr;\n";
-  case bwd_v:
+  case pointer_decrease_v:
     return "--ptr;\n";
-  case inc_v:
+  case pointee_increase_v:
     return "++*ptr;\n";
-  case dec_v:
+  case pointee_decrease_v:
     return "--*ptr;\n";
   case put_v:
     return "putchar(*ptr);\n";
   case get_v:
     return "*ptr=getchar();\n";
-  case whb_v:
+  case while_begin_v:
     return "while (*ptr) {\n";
-  case whe_v:
+  case while_end_v:
     return "}\n";
   case nop_v:
     return "nop\n";
