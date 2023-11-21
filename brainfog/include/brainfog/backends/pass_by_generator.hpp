@@ -20,13 +20,12 @@ constexpr auto vector_codegen() {
   // Generator should return an element of type
   // ast_node_vec_t
   using GeneratorReturnType = decltype(Generator());
-  static_assert(std::is_same_v<GeneratorReturnType,
-                               ast_node_vec_t>,
-                "vector_codegen(): Invalid parameter "
-                "Generator. Generator "
-                "should be a "
-                "function that returns a value of "
-                "type ast_node_vec_t.");
+  static_assert(
+      std::is_same_v<GeneratorReturnType,
+                     ast_node_vec_t>,
+      "vector_codegen(): Invalid parameter "
+      "Generator. Generator should be a function "
+      "that returns a value of type ast_node_vec_t.");
 
   // Getting size as a constexpr value
   constexpr std::size_t Size = Generator().size();
@@ -48,12 +47,12 @@ template <auto Generator> constexpr auto codegen() {
   // Generator should return an element of type
   // ast_node_ptr_t
   using GeneratorReturnType = decltype(Generator());
-  static_assert(std::is_same_v<GeneratorReturnType,
-                               ast_node_ptr_t>,
-                "codegen(): Invalid parameter "
-                "Generator. Generator should be a "
-                "function that returns a value of "
-                "type ast_node_ptr_t.");
+  static_assert(
+      std::is_same_v<GeneratorReturnType,
+                     ast_node_ptr_t>,
+      "codegen(): Invalid parameter Generator. "
+      "Generator should be a function that returns a "
+      "value of type ast_node_ptr_t.");
 
   // Getting kind as a constexpr variable
   constexpr ast_node_kind_t Kind =
