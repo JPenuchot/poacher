@@ -6,7 +6,8 @@
 
 namespace brainfog::extra {
 
-inline std::ostream &operator<<(std::ostream &, ast_node_ptr_t const &);
+inline std::ostream &
+operator<<(std::ostream &, ast_node_ptr_t const &);
 
 /// Converts a token into a string_view.
 constexpr std::string_view to_string(token_t t) {
@@ -34,24 +35,29 @@ constexpr std::string_view to_string(token_t t) {
 }
 
 /// Outputs a token node.
-inline std::ostream &operator<<(std::ostream &o, ast_token_t const &t) {
+inline std::ostream &
+operator<<(std::ostream &o, ast_token_t const &t) {
   return o << to_string(t.get_token());
 }
 
 /// Outputs an block node.
-inline std::ostream &operator<<(std::ostream &o, ast_block_t const &b) {
+inline std::ostream &
+operator<<(std::ostream &o, ast_block_t const &b) {
   for (ast_node_ptr_t const &n : b.get_content())
     o << n;
   return o;
 }
 
 /// Outputs a while node.
-inline std::ostream &operator<<(std::ostream &o, ast_while_t const &w) {
-  return o << to_string(whb_v) << w.get_block() << to_string(whe_v);
+inline std::ostream &
+operator<<(std::ostream &o, ast_while_t const &w) {
+  return o << to_string(whb_v) << w.get_block()
+           << to_string(whe_v);
 }
 
 /// Outputs a node pointer.
-inline std::ostream &operator<<(std::ostream &o, ast_node_ptr_t const &p) {
+inline std::ostream &
+operator<<(std::ostream &o, ast_node_ptr_t const &p) {
   if (isa<ast_token_t>(p))
     return o << *getas<ast_token_t>(p);
   if (isa<ast_block_t>(p))

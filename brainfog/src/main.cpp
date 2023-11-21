@@ -3,7 +3,8 @@
 #include <brainfog/parser.hpp>
 #include <brainfog/program.hpp>
 
-static constexpr auto program_string = brainfog::example_programs::hello_world;
+static constexpr auto program_string =
+    brainfog::example_programs::hello_world;
 namespace bf = brainfog;
 
 // #define PBG
@@ -31,10 +32,13 @@ int main() {
 int main() {
   bf::program_state_t s;
 
-  auto expression_template = bf::expression_template::to_et(
-      []() { return bf::parser::parse_ast(program_string); });
+  auto expression_template =
+      bf::expression_template::to_et([]() {
+        return bf::parser::parse_ast(program_string);
+      });
 
-  bf::expression_template::codegen(expression_template)(s);
+  bf::expression_template::codegen(
+      expression_template)(s);
 }
 #endif
 
@@ -43,7 +47,8 @@ int main() {
 
 int main() {
   static constexpr auto FlatAst =
-      bf::flat::parse_to_fixed_flat_ast<program_string>();
+      bf::flat::parse_to_fixed_flat_ast<
+          program_string>();
   bf::program_state_t s;
   bf::flat::codegen<FlatAst>()(s);
 }
