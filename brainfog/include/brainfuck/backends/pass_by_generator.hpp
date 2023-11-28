@@ -5,10 +5,10 @@
 #include <type_traits>
 #include <utility>
 
-#include <brainfog/ast.hpp>
-#include <brainfog/program.hpp>
+#include <brainfuck/ast.hpp>
+#include <brainfuck/program.hpp>
 
-namespace brainfog::pass_by_generator {
+namespace brainfuck::pass_by_generator {
 
 template <auto Generator> constexpr auto codegen();
 
@@ -133,4 +133,4 @@ template <auto Generator> constexpr auto codegen() {
   }
 }
 
-} // namespace brainfog::pass_by_generator
+} // namespace brainfuck::pass_by_generator

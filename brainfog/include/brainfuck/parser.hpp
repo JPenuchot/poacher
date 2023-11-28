@@ -5,9 +5,9 @@
 #include <memory>
 #include <string>
 
-#include <brainfog/ast.hpp>
+#include <brainfuck/ast.hpp>
 
-namespace brainfog::parser {
+namespace brainfuck::parser {
 
 /// Parser implementation
 namespace impl {
@@ -83,4 +83,4 @@ parse_ast(std::string const &input) {
       std::move(block));
 }
 
-} // namespace brainfog::parser
+} // namespace brainfuck::parser

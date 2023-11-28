@@ -1,6 +1,6 @@
 #pragma once
 
-namespace brainfog::example_programs {
+namespace brainfuck::example_programs {
 
 /// A "Hello World!" program.
 /// Source:
@@ -747,4 +747,4 @@ static constexpr const char *mandelbrot_x2 =
     ">>>>+<<<<<<<<<]>>>>>>>>>]>>>>>->>>>>>>>>>>>>>>>>"
     ">>>>>>>>>>-<<<<<<[<<<<<<<<<]]>>>]";
 
-} // namespace brainfog::example_programs
+} // namespace brainfuck::example_programs

@@ -1,18 +1,18 @@
-#include <brainfog/ast.hpp>
-#include <brainfog/example_programs.hpp>
-#include <brainfog/parser.hpp>
-#include <brainfog/program.hpp>
+#include <brainfuck/ast.hpp>
+#include <brainfuck/example_programs.hpp>
+#include <brainfuck/parser.hpp>
+#include <brainfuck/program.hpp>
 
 static constexpr auto program_string =
-    brainfog::example_programs::hello_world;
-namespace bf = brainfog;
+    brainfuck::example_programs::hello_world;
+namespace bf = brainfuck;
 
 // #define PBG
 // #define ET
 #define FLAT
 
 #ifdef PBG
-#include <brainfog/backends/pass_by_generator.hpp>
+#include <brainfuck/backends/pass_by_generator.hpp>
 
 int main() {
   { // Pass by generator backend
@@ -27,7 +27,7 @@ int main() {
 #endif
 
 #ifdef ET
-#include <brainfog/backends/expression_template.hpp>
+#include <brainfuck/backends/expression_template.hpp>
 
 int main() {
   bf::program_state_t s;
@@ -43,7 +43,7 @@ int main() {
 #endif
 
 #ifdef FLAT
-#include <brainfog/backends/flat.hpp>
+#include <brainfuck/backends/flat.hpp>
 
 int main() {
   static constexpr auto FlatAst =

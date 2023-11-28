@@ -1,12 +1,12 @@
 #pragma once
 
-#include <brainfog/ast.hpp>
-#include <brainfog/program.hpp>
+#include <brainfuck/ast.hpp>
+#include <brainfuck/program.hpp>
 
 // NB: Does not work yet! Waiting for propconst:
 // https://wg21.link/P1974
 
-namespace brainfog::backends::nttp {
+namespace brainfuck::backends::nttp {
 
 template <ast_node_t const &n>
 void run_node(program_state_t &);
@@ -53,4 +53,4 @@ void run_node_ptr(program_state_t &s) {
     run_while<getas<ast_while_t>(p)>(s);
 }
 
-} // namespace brainfog::backends::nttp
+} // namespace brainfuck::backends::nttp

@@ -6,9 +6,9 @@
 #include <cest/istream.hpp>
 #include <cest/ostream.hpp>
 
-#include <brainfog/ast.hpp>
+#include <brainfuck/ast.hpp>
 
-namespace brainfog {
+namespace brainfuck {
 
 struct program_state_t {
   constexpr program_state_t() noexcept : i(0) {
@@ -21,4 +21,4 @@ struct program_state_t {
   std::size_t i;
 };
 
-} // namespace brainfog
+} // namespace brainfuck

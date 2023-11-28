@@ -9,12 +9,12 @@
 // Issue: *terrible* performance as programs get a bit
 // too big.
 
-#include <brainfog/ast.hpp>
-#include <brainfog/program.hpp>
-
 #include <cstdio>
 
-namespace brainfog::expression_template {
+#include <brainfuck/ast.hpp>
+#include <brainfuck/program.hpp>
+
+namespace brainfuck::expression_template {
 
 template <typename... Ts> struct et_block_t {
   constexpr et_block_t() {}
@@ -136,4 +136,4 @@ inline auto codegen(et_token_t<nop_v>) {
   return [](program_state_t &s) {};
 }
 
-} // namespace brainfog::expression_template
+} // namespace brainfuck::expression_template

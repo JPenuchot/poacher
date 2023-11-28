@@ -6,8 +6,6 @@
 // since this form is *very* close to its original
 // one.
 
-#include "brainfog/program.hpp"
-
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -15,10 +13,11 @@
 #include <variant>
 #include <vector>
 
-#include <brainfog/ast.hpp>
-#include <brainfog/parser.hpp>
+#include <brainfuck/ast.hpp>
+#include <brainfuck/parser.hpp>
+#include <brainfuck/program.hpp>
 
-namespace brainfog::flat {
+namespace brainfuck::flat {
 
 using std::size_t;
 
@@ -318,4 +317,4 @@ constexpr auto parse_to_fixed_flat_ast() {
   return arr;
 }
 
-} // namespace brainfog::flat
+} // namespace brainfuck::flat

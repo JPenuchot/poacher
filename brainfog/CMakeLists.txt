@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(brainfog)
+project(brainfuck)
 
 set(COMPILE_BENCHMARKS
     OFF
@@ -17,12 +17,12 @@ add_compile_options(
   -fconstexpr-depth=128)
 
 # Build
-add_executable(brainfog ${SOURCES})
+add_executable(brainfuck ${SOURCES})
 
-target_include_directories(brainfog PUBLIC "include/")
+target_include_directories(brainfuck PUBLIC "include/")
 
 # Format
-add_custom_target(format-brainfog COMMAND "clang-format" "-i" ${SOURCES}
+add_custom_target(format-brainfuck COMMAND "clang-format" "-i" ${SOURCES}
                                           ${HEADERS})
 
 # Benchmarks
