@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace brainfog {
+namespace brainfuck {
 
 //----------------------------------------------------
 // TOKEN TYPE
@@ -222,4 +222,4 @@ constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
   }
 }
 
-} // namespace brainfog
+} // namespace brainfuck
