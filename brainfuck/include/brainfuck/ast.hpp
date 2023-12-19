@@ -76,15 +76,6 @@ public:
   }
   constexpr virtual ~node_interface_t() = default;
 };
-
-/// Helper class
-template <typename Child> struct make_visitable_t {
-  template <typename F>
-  constexpr auto visit(F &&f) const {
-    return f(*static_cast<Child const *>(this));
-  }
-};
-
 // Helpers
 
 /// Token vector helper
@@ -100,8 +91,7 @@ using ast_node_vec_t = std::vector<ast_node_ptr_t>;
 // !Helpers
 
 /// AST node type for single Brainfuck tokens
-struct ast_token_t : node_interface_t,
-                     make_visitable_t<ast_token_t> {
+struct ast_token_t : node_interface_t {
   token_t token_;
 
 public:
@@ -115,8 +105,7 @@ public:
 };
 
 /// AST node type for Brainfuck code blocks
-struct ast_block_t : node_interface_t,
-                     make_visitable_t<ast_block_t> {
+struct ast_block_t : node_interface_t {
 public:
   using node_ptr_t = ast_node_ptr_t;
 
@@ -148,8 +137,7 @@ public:
 };
 
 /// AST node type for Brainfuck while loop
-struct ast_while_t : node_interface_t,
-                     make_visitable_t<ast_while_t> {
+struct ast_while_t : node_interface_t {
   ast_block_t block_;
 
 public:
@@ -211,14 +199,14 @@ constexpr T *getas(std::unique_ptr<U> const &p) {
 }
 
 template <typename F>
-constexpr auto visit(F &&f, ast_node_ptr_t const &p) {
+constexpr auto visit(F f, ast_node_ptr_t const &p) {
   switch (p->get_kind()) {
   case ast_token_v:
-    return getas<ast_token_t>(p)->visit(f);
+    return f(static_cast<ast_token_t const &>(*p));
   case ast_block_v:
-    return getas<ast_block_t>(p)->visit(f);
+    return f(static_cast<ast_block_t const &>(*p));
   case ast_while_v:
-    return getas<ast_while_t>(p)->visit(f);
+    return f(static_cast<ast_while_t const &>(*p));
   }
 }
 
