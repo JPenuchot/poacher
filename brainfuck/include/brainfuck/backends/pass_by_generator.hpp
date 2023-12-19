@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cerrno>
 #include <cstdio>
 #include <type_traits>
 #include <utility>
@@ -10,65 +9,80 @@
 
 namespace brainfuck::pass_by_generator {
 
+/// Declaration of the `generates` concept which
+/// is satisfied if Generator has an operator()
+/// function that returns a value of type ReturnType.
 template <typename Generator, typename ReturnType>
 concept generates = requires(Generator gen) {
   { gen() } -> std::same_as<ReturnType>;
 };
 
+/// Forward declaration of the codegen function,
+/// which generates code for a generic AST node.
 template <generates<ast_node_ptr_t> auto>
 constexpr auto codegen();
 
 namespace detail {
 /// Accepts a generator function that returns a vector
 /// of ast_node_ptr_t, and generates its code.
-template <generates<ast_node_vec_t> auto VectorGenerator>
+template <generates<ast_node_vec_t> auto Generator>
 constexpr auto vector_codegen() {
   // Getting size as a constexpr value
-  constexpr std::size_t Size =
-      VectorGenerator().size();
+  constexpr std::size_t Size = Generator().size();
 
+  // Performing a static unrolling
+  // on the vector's elements
   return [&](program_state_t &state) {
-    [&]<std::size_t... Indexes>(
-        std::index_sequence<Indexes...>) {
-      (
-          [&]() {
-            codegen<[]() {
-              return std::move(
-                  VectorGenerator()[Indexes]);
-            }>()(state);
-          }(),
-          ...);
+    [&]<std::size_t... IndexPack>(
+        std::index_sequence<IndexPack...>) {
+      (...,
+       // A lambda has to be used here
+       // for the program to compile
+       [&]() {
+         codegen<[]() -> ast_node_ptr_t {
+           return std::move(Generator()[IndexPack]);
+         }>()(state);
+       }());
     }(std::make_index_sequence<Size>{});
   };
 }
 
+/// This variable template is used
+/// as a token to instruction map
 template <token_t Token>
-constexpr auto token_codegen() {
-  if constexpr (Token == pointer_increase_v) {
-    return [](program_state_t &state) { state.i++; };
-  } else if constexpr (Token == pointer_decrease_v) {
-    return [](program_state_t &state) { state.i--; };
-  } else if constexpr (Token == pointee_increase_v) {
-    return [](program_state_t &state) {
-      state.data[state.i]++;
-    };
-  } else if constexpr (Token == pointee_decrease_v) {
-    return [](program_state_t &state) {
-      state.data[state.i]--;
-    };
-  } else if constexpr (Token == put_v) {
-    return [](program_state_t &state) {
+inline constexpr auto instruction_from_token =
+    [](program_state_t &) {};
+
+template <>
+inline constexpr auto
+    instruction_from_token<pointer_increase_v> =
+        [](program_state_t &state) { state.i++; };
+template <>
+inline constexpr auto
+    instruction_from_token<pointer_decrease_v> =
+        [](program_state_t &state) { state.i--; };
+template <>
+inline constexpr auto
+    instruction_from_token<pointee_increase_v> =
+        [](program_state_t &state) {
+          state.data[state.i]++;
+        };
+template <>
+inline constexpr auto
+    instruction_from_token<pointee_decrease_v> =
+        [](program_state_t &state) {
+          state.data[state.i]--;
+        };
+template <>
+inline constexpr auto instruction_from_token<put_v> =
+    [](program_state_t &state) {
       std::putchar(state.data[state.i]);
     };
-  } else if constexpr (Token == get_v) {
-    return [](program_state_t &state) {
+template <>
+inline constexpr auto instruction_from_token<get_v> =
+    [](program_state_t &state) {
       state.data[state.i] = std::getchar();
     };
-  } else {
-    return [](program_state_t &) {};
-  }
-}
-
 } // namespace detail
 
 template <generates<ast_node_ptr_t> auto Generator>
@@ -81,48 +95,32 @@ constexpr auto codegen() {
   if constexpr (Kind == ast_token_v) {
     // Getting token as a constexpr variable
     constexpr token_t Token =
-        static_cast<ast_token_t const *>(
-            Generator().get())
-            ->get_token();
+        static_cast<ast_token_t const &>(*Generator())
+            .get_token();
 
-    return detail::token_codegen<Token>();
+    return detail::instruction_from_token<Token>;
   }
 
   // Node is a block
   else if constexpr (Kind == ast_block_v) {
-
-    constexpr std::size_t Size =
-        static_cast<ast_block_t &>(*Generator())
-            .get_content()
-            .size();
-
     return detail::vector_codegen<
-        []() constexpr -> ast_node_vec_t {
-          return std::move(static_cast<ast_block_t *>(
-                               Generator().get())
-                               ->get_content());
+        []() -> ast_node_vec_t {
+          return std::move(
+              static_cast<ast_block_t &>(*Generator())
+                  .get_content());
         }>();
   }
 
   // Node is a while loop
   else if constexpr (Kind == ast_while_v) {
-    constexpr auto VectorGenerator =
-        []() constexpr -> ast_node_vec_t {
-      return std::move(static_cast<ast_while_t *>(
-                           Generator().get())
-                           ->get_block()
-                           .get_content());
-    };
-
-    constexpr std::size_t Size =
-        static_cast<ast_while_t *>(Generator().get())
-            ->get_block()
-            .get_content()
-            .size();
-
     // Extracting the while body
     auto while_body =
-        detail::vector_codegen<VectorGenerator>();
+        detail::vector_codegen<[]() -> ast_node_vec_t {
+      return std::move(
+          static_cast<ast_while_t &>(*Generator())
+              .get_block()
+              .get_content());
+    }>();
 
     // Encapsulating it inside a while loop
     return [while_body](program_state_t &state) {
