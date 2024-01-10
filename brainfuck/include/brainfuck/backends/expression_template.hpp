@@ -16,17 +16,17 @@
 
 namespace brainfuck::expression_template {
 
-template <typename... Ts> struct et_block_t {
+template <typename... Nodes> struct et_block_t {
   constexpr et_block_t() {}
-  constexpr et_block_t(Ts const &...) {}
+  constexpr et_block_t(Nodes const &...) {}
 };
 
-template <typename... Ts> struct et_while_t {
+template <typename... Nodes> struct et_while_t {
   constexpr et_while_t() {}
-  constexpr et_while_t(Ts const &...) {}
+  constexpr et_while_t(Nodes const &...) {}
 };
 
-template <token_t V> struct et_token_t {};
+template <token_t Token> struct et_token_t {};
 
 // f being a cosntexpr function with return type
 // ast_node_t
@@ -39,7 +39,7 @@ constexpr auto
 to_et(f, std::integral_constant<ast_node_kind_t,
                                 ast_token_v>) {
   constexpr token_t T =
-      getas<ast_token_t>(f{}())->get_token();
+      static_cast<ast_token_t const &>(*f{}()).token;
   return et_token_t<T>{};
 }
 
@@ -50,12 +50,14 @@ constexpr auto
 to_et(f, std::integral_constant<ast_node_kind_t,
                                 ast_block_v>) {
   constexpr std::size_t S =
-      getas<ast_block_t>(f{}())->get_content().size();
+      static_cast<ast_block_t const &>(*f{}())
+          .content.size();
   return []<std::size_t... Is>(
              std::index_sequence<Is...>) {
     return et_block_t(to_et([]() constexpr {
-      return std::move(getas<ast_block_t>(f{}())
-                           ->get_content()[Is]);
+      return std::move(
+          static_cast<ast_block_t &>(*f{}())
+              .content[Is]);
     })...);
   }(std::make_index_sequence<S>{});
 }
@@ -66,69 +68,72 @@ template <typename f>
 constexpr auto
 to_et(f, std::integral_constant<ast_node_kind_t,
                                 ast_while_v>) {
-  constexpr std::size_t S = getas<ast_while_t>(f{}())
-                                ->get_block()
-                                .get_content()
-                                .size();
+  constexpr std::size_t S =
+      static_cast<ast_while_t const &>(*f{}())
+          .block.content.size();
   return []<std::size_t... Is>(
              std::index_sequence<Is...>) {
     return et_while_t(to_et([]() constexpr {
-      return std::move(getas<ast_while_t>(f{}())
-                           ->get_block()
-                           .get_content()[Is]);
+      return std::move(
+          static_cast<ast_while_t &>(*f{}())
+              .block.content[Is]);
     })...);
   }(std::make_index_sequence<S>{});
 }
 
 template <typename f> constexpr auto to_et(f) {
-  constexpr ast_node_kind_t K = f{}()->get_kind();
-  return to_et(
-      f{},
-      std::integral_constant<ast_node_kind_t, K>{});
+  constexpr ast_node_kind_t Kind = f{}()->get_kind();
+  return to_et(f{},
+               std::integral_constant<ast_node_kind_t,
+                                      Kind>{});
 }
 
 // codegen meta-function overloads
 
 template <typename... Ts>
 inline auto codegen(et_block_t<Ts...>) {
-  return [](program_state_t &s) {
-    (codegen(Ts{})(s), ...);
+  return [](program_state_t &state) {
+    (codegen(Ts{})(state), ...);
   };
 }
 
 template <typename... Ts>
 inline auto codegen(et_while_t<Ts...>) {
-  return [](program_state_t &s) {
-    while (s.data[s.i])
-      (codegen(Ts{})(s), ...);
+  return [](program_state_t &state) {
+    while (state.data[state.i])
+      (codegen(Ts{})(state), ...);
   };
 }
 
 inline auto codegen(et_token_t<pointer_increase_v>) {
-  return [](program_state_t &s) { ++s.i; };
+  return [](program_state_t &state) { ++state.i; };
 }
 
 inline auto codegen(et_token_t<pointer_decrease_v>) {
-  return [](program_state_t &s) { --s.i; };
+  return [](program_state_t &state) { --state.i; };
 }
 
 inline auto codegen(et_token_t<pointee_increase_v>) {
-  return [](program_state_t &s) { s.data[s.i]++; };
+  return [](program_state_t &state) {
+    state.data[state.i]++;
+  };
 }
 
 inline auto codegen(et_token_t<pointee_decrease_v>) {
-  return [](program_state_t &s) { s.data[s.i]--; };
+  return [](program_state_t &state) {
+    state.data[state.i]--;
+  };
 }
 
 inline auto codegen(et_token_t<put_v>) {
-  return [](program_state_t &s) {
-    std::cout.put(s.data[s.i]);
+  return [](program_state_t &state) {
+    std::putchar(state.data[state.i]);
   };
 }
 
 inline auto codegen(et_token_t<get_v>) {
-  return [](program_state_t &s) {
-    std::cin.get(s.data[s.i]);
+  return [](program_state_t &state) {
+    state.data[state.i] = std::getchar();
   };
 }
 

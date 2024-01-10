@@ -79,7 +79,7 @@ constexpr void block_gen(ast_node_ptr_t const &,
 constexpr void block_gen(ast_token_t const &tok,
                          block_gen_state_t &s) {
   s.blocks[s.block_pos].push_back(
-      flat_token_t{tok.get_token()});
+      flat_token_t{tok.token});
 }
 
 /// block_gen for an AST block.
@@ -92,17 +92,17 @@ constexpr void block_gen(ast_block_t const &blo,
 
   // Preallocating
   s.blocks[s.block_pos].reserve(
-      blo.get_content().size() + 1);
-  s.total_size += blo.get_content().size() + 1;
+      blo.content.size() + 1);
+  s.total_size += blo.content.size() + 1;
 
   // Adding block descriptor as a prefix
   s.blocks[s.block_pos].push_back(
       flat_block_descriptor_t{
-          blo.get_content().size()});
+          blo.content.size()});
 
   // Flattening instructions
   for (ast_node_ptr_t const &node :
-       blo.get_content()) {
+       blo.content) {
     block_gen(node, s);
   }
 
@@ -116,7 +116,7 @@ constexpr void block_gen(ast_while_t const &whi,
                          block_gen_state_t &s) {
   s.blocks[s.block_pos].push_back(
       flat_while_t{s.blocks.size()});
-  block_gen(whi.get_block(), s);
+  block_gen(whi.block, s);
 }
 
 constexpr void block_gen(ast_node_ptr_t const &p,

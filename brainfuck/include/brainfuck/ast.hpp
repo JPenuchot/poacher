@@ -92,30 +92,21 @@ using ast_node_vec_t = std::vector<ast_node_ptr_t>;
 
 /// AST node type for single Brainfuck tokens
 struct ast_token_t : node_interface_t {
-  token_t token_;
+  token_t token;
 
-public:
-  constexpr ast_token_t(token_t t)
-      : node_interface_t(ast_token_v), token_(t) {}
-
-  /// Returns the token's value.
-  constexpr token_t get_token() const {
-    return token_;
-  }
+  constexpr ast_token_t(token_t token_)
+      : node_interface_t(ast_token_v), token(token_) {}
 };
 
 /// AST node type for Brainfuck code blocks
 struct ast_block_t : node_interface_t {
-public:
   using node_ptr_t = ast_node_ptr_t;
 
-private:
-  ast_node_vec_t content_;
+  ast_node_vec_t content;
 
-public:
-  constexpr ast_block_t(ast_node_vec_t &&content)
+  constexpr ast_block_t(ast_node_vec_t &&content_)
       : node_interface_t(ast_block_v),
-        content_(std::move(content)) {}
+        content(std::move(content_)) {}
 
   constexpr ast_block_t(ast_block_t &&v) = default;
   constexpr ast_block_t &
@@ -125,78 +116,24 @@ public:
       delete;
   constexpr ast_block_t &
   operator=(ast_block_t const &v) = delete;
-
-  /// Returns a const reference to its content.
-  constexpr ast_node_vec_t const &
-  get_content() const {
-    return content_;
-  }
-  constexpr ast_node_vec_t &get_content() {
-    return content_;
-  }
 };
 
 /// AST node type for Brainfuck while loop
 struct ast_while_t : node_interface_t {
-  ast_block_t block_;
+  ast_block_t block;
 
-public:
-  constexpr ast_while_t(ast_block_t &&block)
+  constexpr ast_while_t(ast_block_t &&block_)
       : node_interface_t(ast_while_v),
-        block_(std::move(block)) {}
-
-  /// Returns a const reference to its block.
-  constexpr ast_block_t const &get_block() const {
-    return block_;
-  }
-  constexpr ast_block_t &get_block() {
-    return block_;
-  }
+        block(std::move(block_)) {}
 };
-
-// isa implementation
-
-/// Returns true if the AST node holds a node of
-/// specified type by looking up its ast_node_kind_t
-/// element, otherwise false.
-template <typename T>
-constexpr bool isa(node_interface_t const &n);
-
-template <>
-constexpr bool
-isa<ast_token_t>(node_interface_t const &n) {
-  return n.get_kind() == ast_token_v;
-}
-
-template <>
-constexpr bool
-isa<ast_block_t>(node_interface_t const &n) {
-  return n.get_kind() == ast_block_v;
-}
-
-template <>
-constexpr bool
-isa<ast_while_t>(node_interface_t const &n) {
-  return n.get_kind() == ast_while_v;
-}
-
-template <typename T, typename U>
-constexpr bool isa(U const *p) {
-  return isa<U>(*p);
-}
-
-template <typename T, typename U>
-constexpr bool isa(std::unique_ptr<U> const &p) {
-  return isa<T>(*p);
-}
 
 /// Casts a given pointer to the specified type if it
 /// matches() its kind tag, otherwise returns nullptr.
-template <typename T, typename U>
-constexpr T *getas(std::unique_ptr<U> const &p) {
-  return isa<T>(p) ? static_cast<T *>(p.get())
-                   : nullptr;
-}
+// template <typename T, typename U>
+// constexpr T *getas(std::unique_ptr<U> const &p) {
+//   return isa<T>(p) ? static_cast<T *>(p.get())
+//                    : nullptr;
+// }
 
 template <typename F>
 constexpr auto visit(F f, ast_node_ptr_t const &p) {

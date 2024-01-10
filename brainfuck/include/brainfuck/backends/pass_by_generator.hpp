@@ -17,18 +17,22 @@ concept generates = requires(Generator gen) {
   { gen() } -> std::same_as<ReturnType>;
 };
 
-/// Forward declaration of the codegen function,
-/// which generates code for a generic AST node.
+/// Code generation function.
+/// It accepts a generator of ast_node_ptr_t
+/// as a template parameter, and generates
+/// the corresponding code for it.
 template <generates<ast_node_ptr_t> auto>
 constexpr auto codegen();
 
 namespace detail {
+
 /// Accepts a generator function that returns a vector
 /// of ast_node_ptr_t, and generates its code.
 template <generates<ast_node_vec_t> auto Generator>
 constexpr auto vector_codegen() {
   // Getting size as a constexpr value
-  constexpr std::size_t Size = Generator().size();
+  constexpr std::size_t VectorSize =
+      Generator().size();
 
   // Performing a static unrolling
   // on the vector's elements
@@ -43,7 +47,7 @@ constexpr auto vector_codegen() {
            return std::move(Generator()[IndexPack]);
          }>()(state);
        }());
-    }(std::make_index_sequence<Size>{});
+    }(std::make_index_sequence<VectorSize>{});
   };
 }
 
@@ -96,7 +100,7 @@ constexpr auto codegen() {
     // Getting token as a constexpr variable
     constexpr token_t Token =
         static_cast<ast_token_t const &>(*Generator())
-            .get_token();
+            .token;
 
     return detail::instruction_from_token<Token>;
   }
@@ -107,20 +111,19 @@ constexpr auto codegen() {
         []() -> ast_node_vec_t {
           return std::move(
               static_cast<ast_block_t &>(*Generator())
-                  .get_content());
+                  .content);
         }>();
   }
 
   // Node is a while loop
   else if constexpr (Kind == ast_while_v) {
     // Extracting the while body
-    auto while_body =
-        detail::vector_codegen<[]() -> ast_node_vec_t {
-      return std::move(
-          static_cast<ast_while_t &>(*Generator())
-              .get_block()
-              .get_content());
-    }>();
+    auto while_body = detail::vector_codegen<
+        []() -> ast_node_vec_t {
+          return std::move(
+              static_cast<ast_while_t &>(*Generator())
+                  .block.content);
+        }>();
 
     // Encapsulating it inside a while loop
     return [while_body](program_state_t &state) {

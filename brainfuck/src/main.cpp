@@ -15,14 +15,14 @@ namespace bf = brainfuck;
 #include <brainfuck/backends/pass_by_generator.hpp>
 
 int main() {
-  { // Pass by generator backend
-    constexpr auto Generator = []() {
-      return bf::parser::parse_ast(program_string);
-    };
-
-    bf::program_state_t s;
-    bf::pass_by_generator::codegen<Generator>()(s);
-  }
+  // Pass by generator backend
+  bf::program_state_t s;
+  auto code =
+      bf::pass_by_generator::codegen<[]() constexpr {
+    return std::move(
+        bf::parser::parse_ast(program_string));
+  }>();
+  code(s);
 }
 #endif
 

@@ -77,11 +77,11 @@ parse_block(token_vec_t::const_iterator parse_begin,
 /// Driver function for the token parser
 constexpr ast_node_ptr_t
 parse_ast(std::string const &input) {
-  auto const tok = impl::lex_tokens(input);
-  auto [block, end] =
-      impl::parse_block(tok.cbegin(), tok.cend());
+  token_vec_t const tok = impl::lex_tokens(input);
+  ast_block_t parse_result = get<ast_block_t>(
+      impl::parse_block(tok.begin(), tok.end()));
   return std::make_unique<ast_block_t>(
-      std::move(block));
+      std::move(parse_result));
 }
 
 } // namespace brainfuck::parser
