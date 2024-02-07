@@ -19,9 +19,9 @@ int main() {
   bf::program_state_t s;
   auto code =
       bf::pass_by_generator::codegen<[]() constexpr {
-    return std::move(
-        bf::parser::parse_ast(program_string));
-  }>();
+        return std::move(
+            bf::parser::parse_ast(program_string));
+      }>();
   code(s);
 }
 #endif
@@ -43,13 +43,23 @@ int main() {
 #endif
 
 #ifdef FLAT
-#include <brainfuck/backends/flat.hpp>
+#include <brainfuck/backends/flat/monolithic-codegen.hpp>
 
 int main() {
   static constexpr auto FlatAst =
       bf::flat::parse_to_fixed_flat_ast<
           program_string>();
-  bf::program_state_t s;
-  bf::flat::codegen<FlatAst>()(s);
+
+  // Calling the monolithic implementation
+  {
+    bf::program_state_t s;
+    bf::flat::monolithic::codegen<FlatAst>()(s);
+  }
+
+  // Calling the overloaded implementation
+  // {
+  // bf::program_state_t s;
+  // bf::flat::overloaded::codegen<FlatAst>()(s);
+  // }
 }
 #endif

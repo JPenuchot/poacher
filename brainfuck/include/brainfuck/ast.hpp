@@ -127,14 +127,6 @@ struct ast_while_t : node_interface_t {
         block(std::move(block_)) {}
 };
 
-/// Casts a given pointer to the specified type if it
-/// matches() its kind tag, otherwise returns nullptr.
-// template <typename T, typename U>
-// constexpr T *getas(std::unique_ptr<U> const &p) {
-//   return isa<T>(p) ? static_cast<T *>(p.get())
-//                    : nullptr;
-// }
-
 template <typename F>
 constexpr auto visit(F f, ast_node_ptr_t const &p) {
   switch (p->get_kind()) {
