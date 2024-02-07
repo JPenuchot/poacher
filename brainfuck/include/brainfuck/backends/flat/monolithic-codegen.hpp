@@ -10,7 +10,7 @@ constexpr auto codegen() {
       Ast[InstructionPos];
 
   /// Single instruction
-  if constexpr (std::holds_alternative<flat_token_t>(
+  if constexpr (holds_alternative<flat_token_t>(
                     Instr)) {
     constexpr flat_token_t const &Token =
         get<flat_token_t>(Instr);
@@ -41,7 +41,7 @@ constexpr auto codegen() {
   }
 
   /// Block of code (ie. whole program or while body)
-  else if constexpr (std::holds_alternative<
+  else if constexpr (holds_alternative<
                          flat_block_descriptor_t>(
                          Instr)) {
     constexpr flat_block_descriptor_t const
@@ -60,8 +60,8 @@ constexpr auto codegen() {
   }
 
   /// While loop
-  else if constexpr (std::holds_alternative<
-                         flat_while_t>(Instr)) {
+  else if constexpr (holds_alternative<flat_while_t>(
+                         Instr)) {
     constexpr flat_while_t const &While =
         get<flat_while_t>(Instr);
     return [](program_state_t &s) {
@@ -71,4 +71,4 @@ constexpr auto codegen() {
     };
   }
 }
-}
+} // namespace brainfuck::flat::monolithic
