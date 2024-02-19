@@ -58,36 +58,50 @@ constexpr auto codegen(flat_token_t) {
   }
 }
 
-/// Code generation implementation for a code
-/// block
+/// Code generation implementation
+/// for a code block
 template <auto const &Ast,
           size_t InstructionPos = 0>
 constexpr auto codegen(flat_block_descriptor_t) {
-  // Static unrolling on the block's instructions,
-  // made possible by the contiguity of its
-  // elements
   return [](program_state_t &s) {
+    // Generating an index sequence type
+    // with a size equal to the code block size.
+    // It will be passed to the template lambda
+    // to expand its indexes.
+    auto index_sequence =
+        std::make_index_sequence<
+            get<flat_block_descriptor_t>(
+                Ast[InstructionPos])
+                .size>{};
+
+    // This lambda is used only to retrieve
+    // the parameter pack generated above.
     [&]<size_t... Indexes>(
         std::index_sequence<Indexes...>) {
+      // Expansion on the index to generate code
+      // for each node and invoke it with the
+      // program state
       (..., codegen<Ast, 1 + InstructionPos +
                              Indexes>()(s));
-    }(std::make_index_sequence<
-        get<flat_block_descriptor_t>(
-            Ast[InstructionPos])
-            .size>{});
+    }(index_sequence);
   };
 }
 
-/// Code generation implementation for a while
-/// block
+/// Code generation implementation
+/// for a while block
 template <auto const &Ast,
           size_t InstructionPos = 0>
 constexpr auto codegen(flat_while_t) {
-  return [](program_state_t &s) {
-    while (s.data[s.i]) {
+  // Generating code for the while statement
+  constexpr auto body =
       codegen<Ast, get<flat_while_t>(
                        Ast[InstructionPos])
-                       .block_begin>()(s);
+                       .block_begin>();
+
+  // Whole while expression
+  return [body](program_state_t &s) {
+    while (s.data[s.i]) {
+      body(s);
     }
   };
 }
@@ -98,7 +112,7 @@ constexpr auto codegen() {
   constexpr flat_node_t Instr =
       Ast[InstructionPos];
 
-  // Calling specialized versions codegen
+  // Calling specialized codegen versions
   // using function overloading
   return codegen<Ast, InstructionPos>(
       decltype(get<Instr.index()>(Instr)){});
