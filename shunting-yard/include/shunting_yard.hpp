@@ -76,14 +76,14 @@ struct constant_t : token_base_t {
 };
 
 /// Literal generic type for a token.
-using token_t =
+using token_variant_t =
     std::variant<failure_t, variable_t, function_t,
                  operator_t, lparen_t, rparen_t,
                  constant_t>;
 
 // Sanity check
 namespace _test {
-constexpr token_t
+constexpr token_variant_t
     test_literal_token(constant_t(1, "one"));
 }
 
@@ -139,7 +139,7 @@ struct token_specification_t {
 };
 
 /// Represents the parsing result of parse_formula.
-using parse_result_t = std::vector<token_t>;
+using parse_result_t = std::vector<token_variant_t>;
 
 /// Tries to parse a token from the token list and
 /// returns an iterator to it.
@@ -157,7 +157,7 @@ constexpr auto parse_token_from_spec_list(
   // Try to find the token from the list
   auto token_iterator = std::find_if(
       token_list_begin, token_list_end,
-      [&](token_t const &token) {
+      [&](token_variant_t const &token) {
         return std::visit(
             [&](auto const &visited_token) -> bool {
               return formula.starts_with(
@@ -183,7 +183,7 @@ constexpr auto parse_token_from_spec_list(
 /// return a failure_t object. Whitespaces are not
 /// trimmed by the function either before or after the
 /// parsing.
-constexpr token_t
+constexpr token_variant_t
 parse_number(std::string_view &text) {
   // Checking for presence of a digit
   std::size_t find_result =
@@ -240,7 +240,7 @@ parse_result_t constexpr parse_to_rpn(
   // arguments, or unary operators.
 
   parse_result_t output_queue;
-  std::vector<token_t> operator_stack;
+  std::vector<token_variant_t> operator_stack;
 
   if !consteval {
     fmt::print("Starting formula: \"{}\"\n", formula);
@@ -250,10 +250,10 @@ parse_result_t constexpr parse_to_rpn(
   while (trim_formula(formula), !formula.empty()) {
     // Debug logs
     if !consteval {
-      fmt::print("- Remaining: \"{}\"\n", formula);
+      fmt::println("- Remaining: \"{}\"", formula);
 
       fmt::print("  Output queue: ");
-      for (token_t const &current_token :
+      for (token_variant_t const &current_token :
            output_queue) {
         fmt::print("{} ",
                    std::visit(
@@ -262,10 +262,10 @@ parse_result_t constexpr parse_to_rpn(
                        },
                        current_token));
       }
-      fmt::print("\n");
+      fmt::println("");
 
       fmt::print("  Operator stack: ");
-      for (token_t const &current_token :
+      for (token_variant_t const &current_token :
            operator_stack) {
         fmt::print("{} ",
                    std::visit(
@@ -274,16 +274,17 @@ parse_result_t constexpr parse_to_rpn(
                        },
                        current_token));
       }
-      fmt::print("\n");
+      fmt::println("");
     }
     // read a token
 
     // Token is a number constant
-    if (token_t parsed_token = parse_number(formula);
+    if (token_variant_t parsed_token =
+            parse_number(formula);
         std::holds_alternative<constant_t>(
             parsed_token)) {
       if !consteval {
-        fmt::print("Reading number\n");
+        fmt::println("Reading number");
       }
       // Put it into the output queue
       output_queue.push_back(parsed_token);
@@ -297,7 +298,7 @@ parse_result_t constexpr parse_to_rpn(
              variable_spec_iterator !=
              spec.variables.end()) {
       if !consteval {
-        fmt::print("Reading variable\n");
+        fmt::println("Reading variable");
       }
       // Put it into the output queue
       output_queue.push_back(*variable_spec_iterator);
@@ -311,7 +312,7 @@ parse_result_t constexpr parse_to_rpn(
              function_spec_iterator !=
              spec.functions.end()) {
       if !consteval {
-        fmt::print("Reading function\n");
+        fmt::println("Reading function");
       }
       // Push it onto the operator stack
       operator_stack.push_back(
@@ -326,7 +327,7 @@ parse_result_t constexpr parse_to_rpn(
              operator_a_spec_iterator !=
              spec.operators.end()) {
       if !consteval {
-        fmt::print("Reading operator\n");
+        fmt::println("Reading operator");
       }
 
       operator_t const &operator_a =
@@ -387,7 +388,7 @@ parse_result_t constexpr parse_to_rpn(
              lparen_token_iterator !=
              spec.lparens.end()) {
       if !consteval {
-        fmt::print("Reading lparen\n");
+        fmt::println("Reading lparen");
       }
       // push it onto the operator stack
       operator_stack.push_back(
@@ -402,7 +403,7 @@ parse_result_t constexpr parse_to_rpn(
              rparen_token_iterator !=
              spec.rparens.end()) {
       if !consteval {
-        fmt::print("Reading rparen\n");
+        fmt::println("Reading rparen");
       }
       // the operator at the top of the operator stack
       // is not a left parenthesis
@@ -415,7 +416,7 @@ parse_result_t constexpr parse_to_rpn(
           // If the stack runs out without finding a
           // left parenthesis, then there are
           // mismatched parentheses.
-          fmt::print("Parenthesis mismatch.\n");
+          fmt::println("Parenthesis mismatch.");
           throw;
         }
         // pop the operator from the operator stack

@@ -10,6 +10,7 @@
 
 int main() {
   namespace tml = tiny_math_language;
+
   static constexpr auto formula =
       "sin((x + 3) / 3 * y ^ 2)";
 
@@ -31,7 +32,32 @@ int main() {
 
   // Printing the result
   for (float const &element : result) {
-    fmt::print("{} ", element);
+    fmt::println("{}", element);
   }
-  fmt::print("\n");
-}
+  {
+    using namespace blaze;
+
+    using expected_type = DVecMapExpr<
+        DVecScalarMultExpr<
+            DVecDVecMultExpr<
+                DVecMapExpr<
+                    DynamicVector<
+                        float, false,
+                        AlignedAllocator<float>,
+                        GroupTag<0>>,
+                    Bind2nd<Add, float>, false>,
+                DVecMapExpr<
+                    DynamicVector<
+                        float, false,
+                        AlignedAllocator<float>,
+                        GroupTag<0>>,
+                    Bind2nd<Pow, float>, false>,
+                false>,
+            float, false>,
+        Sin, false>;
+
+    static_assert(std::is_same<
+                  expected_type,
+                  decltype(function(
+                      vector_x, vector_y))>::value);
+  }
