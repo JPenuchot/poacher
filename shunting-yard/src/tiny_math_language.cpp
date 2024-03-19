@@ -1,6 +1,4 @@
-#include <algorithm>
 #include <blaze/math/dense/DynamicVector.h>
-#include <utility>
 
 #include <fmt/core.h>
 
