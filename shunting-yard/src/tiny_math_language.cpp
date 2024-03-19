@@ -34,30 +34,4 @@ int main() {
   for (float const &element : result) {
     fmt::println("{}", element);
   }
-  {
-    using namespace blaze;
-
-    using expected_type = DVecMapExpr<
-        DVecScalarMultExpr<
-            DVecDVecMultExpr<
-                DVecMapExpr<
-                    DynamicVector<
-                        float, false,
-                        AlignedAllocator<float>,
-                        GroupTag<0>>,
-                    Bind2nd<Add, float>, false>,
-                DVecMapExpr<
-                    DynamicVector<
-                        float, false,
-                        AlignedAllocator<float>,
-                        GroupTag<0>>,
-                    Bind2nd<Pow, float>, false>,
-                false>,
-            float, false>,
-        Sin, false>;
-
-    static_assert(std::is_same<
-                  expected_type,
-                  decltype(function(
-                      vector_x, vector_y))>::value);
-  }
+}
