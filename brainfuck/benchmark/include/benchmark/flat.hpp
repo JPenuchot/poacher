@@ -1,35 +1,18 @@
 #pragma once
 
-#include <brainfog/backends/flat.hpp>
-#include <brainfog/parser.hpp>
-
-/// Parse program to flat AST
-template <auto const &ProgramString> constexpr auto to_flat_ast() {
-  namespace bf = brainfog;
-  namespace bflat = bf::flat;
-
-  // Calculating size
-  constexpr size_t AstArraySize =
-      bflat::flatten(bf::naive_parser::parse_ast(ProgramString)).size();
-
-  // Building array from vector
-  bflat::flat_ast_t ast_vec =
-      bflat::flatten(bf::naive_parser::parse_ast(ProgramString));
-
-  bflat::fixed_flat_ast_t<AstArraySize> arr;
-  std::ranges::copy(ast_vec, arr.begin());
-
-  return arr;
-}
+#include <brainfuck/backends/flat/monolithic-codegen.hpp>
+#include <brainfuck/parser.hpp>
 
 /// Parse and run program using the flat AST backend
-template <auto const &ProgramString> inline void run_program() {
-  namespace bf = brainfog;
-  namespace bflat = bf::flat;
+template <auto const &ProgramString>
+inline void run_program() {
+  static constexpr auto FlatAst =
+      brainfuck::flat::parse_to_fixed_flat_ast<
+          ProgramString>(); // ok
 
-  static constexpr auto FlatAst = to_flat_ast<ProgramString>();
+  brainfuck::program_state_t s;
+  auto fun =
+      brainfuck::flat::monolithic::codegen<FlatAst>();
 
-  bf::program_state_t s;
-
-  bflat::run<FlatAst>(s);
+  fun(s);
 }

@@ -1,15 +1,18 @@
 #pragma once
 
-#include <brainfog/backends/expression_template.hpp>
-#include <brainfog/parser.hpp>
-#include <brainfog/program.hpp>
+#include <brainfuck/backends/expression_template.hpp>
+#include <brainfuck/parser.hpp>
+#include <brainfuck/program.hpp>
 
-template <auto const &ProgramString> inline void run_program() {
-  brainfog::program_state_t s;
+template <auto const &ProgramString>
+inline void run_program() {
+  brainfuck::program_state_t s;
 
-  brainfog::expression_template::run(
-      brainfog::expression_template::to_et([]() {
-        return brainfog::naive_parser::parse_ast(ProgramString);
-      }),
-      s);
+  auto fun = brainfuck::expression_template::codegen(
+      brainfuck::expression_template::to_et([]() {
+        return brainfuck::parser::parse_ast(
+            ProgramString);
+      }));
+
+  fun(s);
 }

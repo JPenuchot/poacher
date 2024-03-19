@@ -3,7 +3,7 @@
 #define FLAT_OVER 2
 #define FLAT_MONO 3
 
-#define BRAINFUCK_BACKEND FLAT_OVER
+#define BRAINFUCK_BACKEND ET
 
 #if BRAINFUCK_BACKEND == PBG
 #include <brainfuck/backends/pass_by_generator.hpp>
