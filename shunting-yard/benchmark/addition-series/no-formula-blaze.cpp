@@ -11,8 +11,8 @@ template <typename T = void> inline auto bench_me() {
   blaze::DynamicVector<unsigned int> vector_b(32, 12);
 
   blaze::DynamicVector<unsigned int> res =
-      BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING, vector_a + vector_b +)
-          vector_a;
+      BOOST_PP_REPEAT(BENCHMARK_SIZE, REPEAT_STRING,
+                      vector_a + vector_b +) vector_a;
 
   return res;
 }
