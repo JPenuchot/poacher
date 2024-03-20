@@ -1,7 +1,7 @@
 find_package(ctbench REQUIRED)
 
 # General benchmark parameters
-set(SY_RANGE 1 5 1 CACHE STRING "Small range of benchmarks")
+set(SY_RANGE 1 20 1 CACHE STRING "Small range of benchmarks")
 
 set(SY_SAMPLES 10 CACHE STRING "Number of samples per benchmark")
 
