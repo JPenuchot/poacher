@@ -40,4 +40,5 @@ ctbench_add_graph(
   shunting-yard.addition-series.graph
   compare_ExecuteCompiler.json
   shunting-yard.addition-series.no-formula-blaze
+  shunting-yard.addition-series.formula-no-blaze
   shunting-yard.addition-series.formula-blaze)
