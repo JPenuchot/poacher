@@ -3,7 +3,7 @@
 #define FLAT_OVER 2
 #define FLAT_MONO 3
 
-#define BRAINFUCK_BACKEND ET
+#define BRAINFUCK_BACKEND FLAT_MONO
 
 #if BRAINFUCK_BACKEND == PBG
 #include <brainfuck/backends/pass_by_generator.hpp>
@@ -22,7 +22,7 @@
 #include <brainfuck/parser.hpp>
 
 static constexpr auto program_string =
-    brainfuck::example_programs::hello_world;
+    brainfuck::example_programs::mandelbrot;
 namespace bf = brainfuck;
 
 #if BRAINFUCK_BACKEND == PBG
@@ -56,13 +56,7 @@ int main() {
 int main() {
   static constexpr auto FlatAst =
       bf::flat::parse_to_fixed_flat_ast<
-          program_string>(); // ok
-
-  // Calling the monolithic implementation
-  // {
-  //   bf::program_state_t s;
-  //   bf::flat::monolithic::codegen<FlatAst>()(s);
-  // }
+          program_string>();
 
   // Calling the overloaded implementation
   {
@@ -76,13 +70,7 @@ int main() {
 int main() {
   static constexpr auto FlatAst =
       bf::flat::parse_to_fixed_flat_ast<
-          program_string>(); // ok
-
-  // Calling the monolithic implementation
-  // {
-  //   bf::program_state_t s;
-  //   bf::flat::monolithic::codegen<FlatAst>()(s);
-  // }
+          program_string>();
 
   // Calling the monolithic implementation
   {

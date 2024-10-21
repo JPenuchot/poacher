@@ -28,11 +28,11 @@ template <typename... Nodes> struct et_while_t {
 
 template <token_t Token> struct et_token_t {};
 
-// f being a cosntexpr function with return type
+// f being a constexpr function with return type
 // ast_node_t
 template <typename f> constexpr auto to_et(f);
 
-// f being a cosntexpr function with return type
+// f being a constexpr function with return type
 // ast_token_t
 template <typename f>
 constexpr auto
@@ -43,7 +43,7 @@ to_et(f, std::integral_constant<ast_node_kind_t,
   return et_token_t<T>{};
 }
 
-// f being a cosntexpr function with return type
+// f being a constexpr function with return type
 // ast_block_t
 template <typename f>
 constexpr auto
@@ -62,7 +62,7 @@ to_et(f, std::integral_constant<ast_node_kind_t,
   }(std::make_index_sequence<S>{});
 }
 
-// f being a cosntexpr function with return type
+// f being a constexpr function with return type
 // ast_while_t
 template <typename f>
 constexpr auto
